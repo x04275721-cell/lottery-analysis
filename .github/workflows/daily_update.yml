@@ -1,0 +1,52 @@
+name: Daily Lottery Update
+
+on:
+  schedule:
+    # 每天23:00 UTC = 次日07:00北京时间
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+    # 支持手动触发
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests
+
+      - name: Run daily update
+        run: python update_all.py
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          git config --local user.name "GitHub Actions Bot"
+          git config --local user.email "actions@github.com"
+
+          # 添加所有更改
+          git add -A
+
+          # 检查是否有更改
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            # 提交更改
+            git commit -m "Auto update: $(date +'%Y-%m-%d %H:%M:%S')"
+
+            # 推送到GitHub
+            git push
+          fi
