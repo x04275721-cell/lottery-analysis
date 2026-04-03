@@ -120,19 +120,16 @@ def get_combined_intersection(last_num):
 def backtest_combined(data, name, periods=100):
     """
     回测组合分解式（同时使用两种方法）
-    规则：只有当两种方法都正确时，才算组合正确
+    测试多种组合规则
     """
-    print(f"\n{'='*60}")
-    print(f"  {name} 组合分解式回测 (最近{periods}期)")
-    print(f"  规则：两种方法都正确 = 正确，任一错误 = 错误")
-    print(f"{'='*60}")
-
     test_data = data[:periods+1]
 
-    total = 0
-    both_correct = 0
-    both_wrong = 0
-    one_correct = 0  # 只有一种方法正确
+    # 统计各种情况
+    both_correct = 0  # 两种都正确
+    both_wrong = 0   # 两种都错误
+    one_correct = 0  # 只有一种正确
+    duima_only = 0   # 只有对码法正确
+    sumtail_only = 0  # 只有和值尾正确
 
     for i in range(len(test_data) - 1):
         last_num = test_data[i+1]['number']
@@ -147,19 +144,42 @@ def backtest_combined(data, name, periods=100):
             both_wrong += 1
         else:
             one_correct += 1
-        total += 1
+            if is_correct_duima:
+                duima_only += 1
+            else:
+                sumtail_only += 1
 
-    both_rate = both_correct / total * 100 if total > 0 else 0
+    total = both_correct + both_wrong + one_correct
 
-    print(f"总预测次数: {total}")
-    print(f"两种都正确: {both_correct}次 ({both_rate:.1f}%)")
-    print(f"两种都错误: {both_wrong}次 ({both_wrong/total*100:.1f}%)")
-    print(f"只有一种正确: {one_correct}次 ({one_correct/total*100:.1f}%)")
+    print(f"\n{'='*60}")
+    print(f"  {name} 组合分解式回测 (最近{periods}期)")
+    print(f"{'='*60}")
+    print(f"\n原始统计:")
+    print(f"  两种都正确: {both_correct}次 ({both_correct/total*100:.1f}%)")
+    print(f"  两种都错误: {both_wrong}次 ({both_wrong/total*100:.1f}%)")
+    print(f"  只有一种正确: {one_correct}次 ({one_correct/total*100:.1f}%)")
+    print(f"    - 只有对码法正确: {duima_only}次")
+    print(f"    - 只有和值尾正确: {sumtail_only}次")
+
+    print(f"\n组合规则对比:")
+    print(f"  规则A - 两种都正确才算正确: {both_correct}/{total} = {both_correct/total*100:.1f}%")
+    print(f"  规则B - 任一正确即正确: {total-both_wrong}/{total} = {(total-both_wrong)/total*100:.1f}%")
+    print(f"  规则C - 两种都错才算错（任一正确=正确）: {(both_correct+one_correct)}/{total} = {(both_correct+one_correct)/total*100:.1f}%")
+
+    # 规则D：选择正确率更高的那种方法
+    duima_count = both_correct + duima_only
+    sumtail_count = both_correct + sumtail_only
+    print(f"  规则D - 选择正确率更高的方法:")
+    print(f"    对码法贡献: {duima_count}/{total} = {duima_count/total*100:.1f}%")
+    print(f"    和值尾贡献: {sumtail_count}/{total} = {sumtail_count/total*100:.1f}%")
 
     return {
         'total': total,
         'both_correct': both_correct,
-        'both_rate': both_rate
+        'both_wrong': both_wrong,
+        'one_correct': one_correct,
+        'duima_only': duima_only,
+        'sumtail_only': sumtail_only
     }
 
 
