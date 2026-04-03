@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-对码法预测
-利用"差5"对码：0-5, 1-6, 2-7, 3-8, 4-9
+彩票分解式预测
+包含两种方法：对码法、和值尾四六分解
 
 ================================================================================
-分解式规则
+方法一：对码法（差5对码）
 ================================================================================
 
 【对码表】
@@ -29,28 +29,44 @@
         剩余数字：{1, 2, 6, 7} → 1267（剩余组）
         结果：034589 - 1267
 
-【分解式正确判断规则】
-    核心原则：两边都要有不同数字
+================================================================================
+方法二：和值尾四六分解（查表法）
+================================================================================
 
-    统计开奖号中不同数字在对码组和剩余组的分布：
-    - 1+2（组三跨两组）：正确
-    - 2+1（组三跨两组）：正确
-    - 1+1（组三，对码组和剩余组各一个不同数字）：正确
-    - 3+0（豹子或三同号，全部在对码组）：错误
-    - 0+3（豹子或三同号，全部在剩余组）：错误
-    - 2+0（组三，同组两个不同数字）：错误
-    - 0+2（组三，同组两个不同数字）：错误
+【和值尾对照表】
+    和值尾0/5 → 4码组:0126, 6码组:345789
+    和值尾1/6 → 4码组:1237, 6码组:045689
+    和值尾2/7 → 4码组:2348, 6码组:015679
+    和值尾3/8 → 4码组:3459, 6码组:012678
+    和值尾4/9 → 4码组:0456, 6码组:123789
 
-    简记：两边都有不同数字 = 正确，只有一边有 = 错误
+【分解方法】
+    1. 计算上期奖号的和值
+    2. 取和值的尾数（和值 % 10）
+    3. 查表得到4码组和6码组
 
-【分布说明】
-    - 1+2：开奖号有3个不同数字，1个在对的组，2个在剩余组
-    - 2+1：开奖号有3个不同数字，2个在对的组，1个在剩余组
-    - 1+1：开奖号只有2个不同数字（组三），各分布在一组
-    - 3+0：开奖号3个不同数字全在对码组（豹子、组三全对码）
-    - 0+3：开奖号3个不同数字全在剩余组（豹子、组三全剩余）
-    - 2+0：开奖号只有2个不同数字，但都在对码组
-    - 0+2：开奖号只有2个不同数字，但都在剩余组
+    示例：上期奖号 048
+        和值 = 0+4+8 = 12
+        和值尾 = 12 % 10 = 2
+        查表：和值尾2 → 4码组:2348, 6码组:015679
+        结果：2348 - 015679
+
+================================================================================
+分解式正确判断规则（两种方法通用）
+================================================================================
+
+核心原则：两边都要有不同数字
+
+统计开奖号中不同数字在两组（如对码组/剩余组）的分布：
+- 1+2（组三跨两组）：正确
+- 2+1（组三跨两组）：正确
+- 1+1（组三，两组各一个不同数字）：正确
+- 3+0（豹子或三同号，全部在一组）：错误
+- 0+3（豹子或三同号，全部在另一组）：错误
+- 2+0（组三，两个不同数字都在一组）：错误
+- 0+2（组三，两个不同数字都在另一组）：错误
+
+简记：两边都有不同数字 = 正确，只有一边有 = 错误
 
 ================================================================================
 """
@@ -64,10 +80,50 @@ DUIMA_PAIRS = {
     '4': '9', '9': '4'
 }
 
+# 和值尾四六分解表
+# 和值尾0/5 → 4码组:0126, 6码组:345789
+# 和值尾1/6 → 4码组:1237, 6码组:045689
+# 和值尾2/7 → 4码组:2348, 6码组:015679
+# 和值尾3/8 → 4码组:3459, 6码组:012678
+# 和值尾4/9 → 4码组:0456, 6码组:123789
+SUM_TAIL_DECOMPOSE = {
+    '0': {'4_group': '0126', '6_group': '345789'},
+    '5': {'4_group': '0126', '6_group': '345789'},
+    '1': {'4_group': '1237', '6_group': '045689'},
+    '6': {'4_group': '1237', '6_group': '045689'},
+    '2': {'4_group': '2348', '6_group': '015679'},
+    '7': {'4_group': '2348', '6_group': '015679'},
+    '3': {'4_group': '3459', '6_group': '012678'},
+    '8': {'4_group': '3459', '6_group': '012678'},
+    '4': {'4_group': '0456', '6_group': '123789'},
+    '9': {'4_group': '0456', '6_group': '123789'},
+}
+
 
 def get_duima_pairs():
     """获取对码对"""
     return DUIMA_PAIRS.copy()
+
+
+def get_sum_tail_decompose(last_num):
+    """
+    根据上期奖号计算和值尾四六分解
+
+    参数:
+        last_num: 上期开奖号码（字符串，如 "048"）
+
+    返回:
+        (4码组字符串, 6码组字符串, 和值尾)
+        例如：("0126", "345789", "2")
+    """
+    # 计算和值
+    sum_val = sum(int(d) for d in last_num)
+    # 和值尾
+    sum_tail = str(sum_val % 10)
+
+    # 查表获取分解
+    decompose = SUM_TAIL_DECOMPOSE[sum_tail]
+    return decompose['4_group'], decompose['6_group'], sum_tail
 
 
 def get_duima_group(last_num):
@@ -101,7 +157,7 @@ def get_duima_group(last_num):
 
 def check_duima_result(result_num, last_num):
     """
-    检查分解式预判是否正确
+    检查对码分解式预判是否正确
 
     参数:
         result_num: 本期实际开奖号码（字符串，如 "903"）
@@ -124,6 +180,35 @@ def check_duima_result(result_num, last_num):
 
     # 判断是否正确：两边都有不同数字 = 正确
     if in_duima >= 1 and in_remaining >= 1:
+        return True, distribution, "正确：两边都有不同数字"
+    else:
+        return False, distribution, "错误：只有一边有不同数字"
+
+
+def check_sum_tail_result(result_num, last_num):
+    """
+    检查和值尾四六分解式预判是否正确
+
+    参数:
+        result_num: 本期实际开奖号码（字符串，如 "903"）
+        last_num: 上期开奖号码（字符串，如 "048"）
+
+    返回:
+        (是否正确布尔值, 分布字符串, 说明)
+    """
+    group4, group6, sum_tail = get_sum_tail_decompose(last_num)
+
+    # 获取开奖号中的不同数字
+    unique_digits = set(result_num)
+
+    # 统计不同数字在两组中的分布
+    in_group4 = sum(1 for d in unique_digits if d in group4)
+    in_group6 = sum(1 for d in unique_digits if d in group6)
+
+    distribution = f"{in_group4}+{in_group6}"
+
+    # 判断是否正确：两边都有不同数字 = 正确
+    if in_group4 >= 1 and in_group6 >= 1:
         return True, distribution, "正确：两边都有不同数字"
     else:
         return False, distribution, "错误：只有一边有不同数字"
@@ -160,8 +245,41 @@ def analyze_duima_method(history_list):
     }
 
 
+def analyze_sum_tail_method(history_list):
+    """
+    和值尾四六分解分析（用于预测）
+
+    参数:
+        history_list: 历史数据列表（最新一期在前）
+
+    返回:
+        包含分析结果的字典
+    """
+    if not history_list or len(history_list[0]['number']) != 3:
+        return {
+            'last_number': '---',
+            'sum_tail': '---',
+            'group4': '',
+            'group6': '',
+            'result': '---',
+            'rule': '两边都有不同数字 = 正确'
+        }
+
+    last_num = history_list[0]['number']
+    group4, group6, sum_tail = get_sum_tail_decompose(last_num)
+
+    return {
+        'last_number': last_num,
+        'sum_tail': sum_tail,
+        'group4': group4,
+        'group6': group6,
+        'result': f"{group4} - {group6}",
+        'rule': '两边都有不同数字 = 正确'
+    }
+
+
 def main():
-    """主函数：显示对码分析结果"""
+    """主函数：显示对码法与和值尾四六分解分析结果"""
     import json
 
     with open('data/all_history.json', 'r', encoding='utf-8') as f:
@@ -171,18 +289,33 @@ def main():
     data_3d = sorted([d for d in data if d['type'] == '3d'], key=lambda x: x['period'], reverse=True)
 
     print("=" * 60)
-    print("对码法分析")
+    print("对码法 & 和值尾四六分解")
     print("=" * 60)
     print("\n【规则】两边都有不同数字 = 正确，只有一边有 = 错误\n")
 
     for name, history in [('排列三', data_pl3), ('3D', data_3d)]:
-        result = analyze_duima_method(history)
-        print(f"【{name}】")
-        print(f"  上期奖号: {result['last_number']}")
-        print(f"  对码组(6个): {result['duima_group']}")
-        print(f"  剩余组(4个): {result['remaining_group']}")
-        print(f"  分解结果: {result['result']}")
+        duima_result = analyze_duima_method(history)
+        sum_tail_result = analyze_sum_tail_method(history)
+
+        print(f"{'='*50}")
+        print(f"【{name}】上期奖号: {duima_result['last_number']}")
+        print(f"{'='*50}")
+
+        print(f"\n[对码法]")
+        print(f"  对码组(6个): {duima_result['duima_group']}")
+        print(f"  剩余组(4个): {duima_result['remaining_group']}")
+        print(f"  分解结果: {duima_result['result']}")
+
+        print(f"\n[和值尾四六分解]")
+        print(f"  和值尾: {sum_tail_result['sum_tail']}")
+        print(f"  4码组: {sum_tail_result['group4']}")
+        print(f"  6码组: {sum_tail_result['group6']}")
+        print(f"  分解结果: {sum_tail_result['result']}")
         print()
+
+
+if __name__ == '__main__':
+    main()
 
 
 if __name__ == '__main__':
