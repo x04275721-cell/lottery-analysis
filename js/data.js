@@ -6,7 +6,7 @@ let LotteryData = {
     '3d': []  // 3D历史
 };
 let favorites = [];
-let currentType = 'pl3';
+let currentType = '3d';
 let lastUpdateTime = null;
 
 // 加载历史数据
