@@ -1798,6 +1798,45 @@
                 }
             }
 
+            // 尝试从服务器加载完整历史数据
+            fetch('data/all_history.json')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const num = item.number || '';
+                            const record = {
+                                period: item.period,
+                                num1: num[0] || '0',
+                                num2: num[1] || '0',
+                                num3: num[2] || '0',
+                                type: item.type,
+                                sum: parseInt(num[0] || 0) + parseInt(num[1] || 0) + parseInt(num[2] || 0),
+                                date: item.date || ''
+                            };
+                            if (item.type === 'pl3' || item.type === '排列三') {
+                                if (!allData.pl3.some(p => p.period === record.period)) {
+                                    allData.pl3.push(record);
+                                }
+                            } else {
+                                if (!allData['3d'].some(p => p.period === record.period)) {
+                                    allData['3d'].push(record);
+                                }
+                            }
+                        });
+                        // 按期号排序
+                        allData.pl3.sort((a, b) => b.period.localeCompare(a.period));
+                        allData['3d'].sort((a, b) => b.period.localeCompare(a.period));
+                        // 保存到localStorage
+                        localStorage.setItem('lotteryData', JSON.stringify(allData));
+                        // 更新UI
+                        const result = doPrediction(currentType);
+                        updatePredictionUI(result, currentType);
+                        updateTrendCharts();
+                    }
+                })
+                .catch(() => console.log('服务器数据加载失败，使用本地数据'));
+
             const savedFav = localStorage.getItem('lotteryFavorites');
             if (savedFav) {
                 try {
