@@ -88,6 +88,73 @@ def analyze_zhi_he(history_list):
     return {'质数': zhi_count, '合数': he_count}
 
 
+def analyze_334_duan(history_list):
+    """
+    334断组分析
+    将0-9分成3、3、4三组，分析近期哪组容易断
+
+    常见分组：012 / 345 / 6789
+    """
+    if not history_list:
+        return {'组1(012)': 0, '组2(345)': 0, '组3(6789)': 0, '预测断组': '组1'}
+
+    group1 = {'0', '1', '2'}
+    group2 = {'3', '4', '5'}
+    group3 = {'6', '7', '8', '9'}
+
+    g1_count, g2_count, g3_count = 0, 0, 0
+
+    for item in history_list[:30]:
+        nums = {item['num1'], item['num2'], item['num3']}
+        if group1 & nums:
+            g1_count += 1
+        if group2 & nums:
+            g2_count += 1
+        if group3 & nums:
+            g3_count += 1
+
+    total = len(history_list[:30]) if len(history_list) >= 30 else len(history_list)
+    counts = {'组1(012)': g1_count, '组2(345)': g2_count, '组3(6789)': g3_count}
+    predict_dan = min(counts, key=counts.get)
+
+    return {
+        '组1(012)': g1_count,
+        '组2(345)': g2_count,
+        '组3(6789)': g3_count,
+        '预测断组': predict_dan
+    }
+
+
+def analyze_55_fenjie(history_list):
+    """
+    55分解分析
+    将0-9分成5、5两组：01234 / 56789
+    """
+    if not history_list:
+        return {'前组(0-4)': 0, '后组(5-9)': 0, '预测偏向': '前组'}
+
+    group_a = {'0', '1', '2', '3', '4'}
+    group_b = {'5', '6', '7', '8', '9'}
+
+    a_count, b_count = 0, 0
+
+    for item in history_list[:30]:
+        nums = {item['num1'], item['num2'], item['num3']}
+        if group_a & nums:
+            a_count += 1
+        if group_b & nums:
+            b_count += 1
+
+    total = len(history_list[:30]) if len(history_list) >= 30 else len(history_list)
+    predict = '前组(0-4)' if a_count > b_count else '后组(5-9)'
+
+    return {
+        '前组(0-4)': a_count,
+        '后组(5-9)': b_count,
+        '预测偏向': predict
+    }
+
+
 def analyze_wuxiao(history_list, top_n=5):
     """五码推荐"""
     if len(history_list) < 10:
@@ -164,7 +231,9 @@ def analyze(name, history_list):
             'sums': [0, 1],
             'ji_bai': {'奇数': 0, '偶数': 0},
             'da_xiao': {'大数': 0, '小数': 0},
-            'zhi_he': {'质数': 0, '合数': 0}
+            'zhi_he': {'质数': 0, '合数': 0},
+            '334_duan': {'组1(012)': 0, '组2(345)': 0, '组3(6789)': 0, '预测断组': '-'},
+            '55_fenjie': {'前组(0-4)': 0, '后组(5-9)': 0, '预测偏向': '-'}
         }
 
     import pandas as pd
@@ -177,6 +246,8 @@ def analyze(name, history_list):
     dan = analyze_dan(history_list)
     sizhu = analyze_si_zhu(history_list)
     sums, _ = predict_sum(df)
+    duan_334 = analyze_334_duan(history_list)
+    fenjie_55 = analyze_55_fenjie(history_list)
 
     return {
         'name': name,
@@ -187,7 +258,9 @@ def analyze(name, history_list):
         'sums': sums,
         'ji_bai': ji_bai,
         'da_xiao': da_xiao,
-        'zhi_he': zhi_he
+        'zhi_he': zhi_he,
+        '334_duan': duan_334,
+        '55_fenjie': fenjie_55
     }
 
 

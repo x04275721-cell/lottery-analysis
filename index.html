@@ -397,6 +397,42 @@
                             <div class="number-list" id="pl3-sums"></div>
                         </div>
                     </div>
+
+                    <div class="item">
+                        <h3>334断组</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">组1 (012)</span>
+                            <span class="stat-value" id="pl3-334-g1">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">组2 (345)</span>
+                            <span class="stat-value" id="pl3-334-g2">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">组3 (6789)</span>
+                            <span class="stat-value" id="pl3-334-g3">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">预测断组</span>
+                            <span class="stat-value" style="color:#e94560;" id="pl3-334-predict">-</span>
+                        </div>
+                    </div>
+
+                    <div class="item">
+                        <h3>55分解</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">前组 (0-4)</span>
+                            <span class="stat-value" id="pl3-55-a">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">后组 (5-9)</span>
+                            <span class="stat-value" id="pl3-55-b">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">预测偏向</span>
+                            <span class="stat-value" style="color:#43e97b;" id="pl3-55-predict">-</span>
+                        </div>
+                    </div>
                 </div>
 
                 <p class="update-time">数据更新时间: <span id="pl3-update">--</span></p>
@@ -487,6 +523,42 @@
                         <h3>和值预测</h3>
                         <div class="sum-section" style="border-top:none;padding-top:0;margin-top:0;">
                             <div class="number-list" id="3d-sums"></div>
+                        </div>
+                    </div>
+
+                    <div class="item">
+                        <h3>334断组</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">组1 (012)</span>
+                            <span class="stat-value" id="3d-334-g1">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">组2 (345)</span>
+                            <span class="stat-value" id="3d-334-g2">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">组3 (6789)</span>
+                            <span class="stat-value" id="3d-334-g3">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">预测断组</span>
+                            <span class="stat-value" style="color:#e94560;" id="3d-334-predict">-</span>
+                        </div>
+                    </div>
+
+                    <div class="item">
+                        <h3>55分解</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">前组 (0-4)</span>
+                            <span class="stat-value" id="3d-55-a">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">后组 (5-9)</span>
+                            <span class="stat-value" id="3d-55-b">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">预测偏向</span>
+                            <span class="stat-value" style="color:#43e97b;" id="3d-55-predict">-</span>
                         </div>
                     </div>
                 </div>
@@ -643,6 +715,23 @@
                     d.sums.map(n => createSumBox(n)).join('');
             }
 
+            // 334断组
+            if (d['334_duan']) {
+                const duan = d['334_duan'];
+                document.getElementById('pl3-334-g1').textContent = duan['组1(012)'] || 0;
+                document.getElementById('pl3-334-g2').textContent = duan['组2(345)'] || 0;
+                document.getElementById('pl3-334-g3').textContent = duan['组3(6789)'] || 0;
+                document.getElementById('pl3-334-predict').textContent = duan['预测断组'] || '-';
+            }
+
+            // 55分解
+            if (d['55_fenjie']) {
+                const fenjie = d['55_fenjie'];
+                document.getElementById('pl3-55-a').textContent = fenjie['前组(0-4)'] || 0;
+                document.getElementById('pl3-55-b').textContent = fenjie['后组(5-9)'] || 0;
+                document.getElementById('pl3-55-predict').textContent = fenjie['预测偏向'] || '-';
+            }
+
             // 更新时间
             document.getElementById('pl3-update').textContent = d.更新 || '--';
 
@@ -689,6 +778,23 @@
             if (d.sums) {
                 document.getElementById('3d-sums').innerHTML =
                     d.sums.map(n => createSumBox(n)).join('');
+            }
+
+            // 334断组
+            if (d['334_duan']) {
+                const duan = d['334_duan'];
+                document.getElementById('3d-334-g1').textContent = duan['组1(012)'] || 0;
+                document.getElementById('3d-334-g2').textContent = duan['组2(345)'] || 0;
+                document.getElementById('3d-334-g3').textContent = duan['组3(6789)'] || 0;
+                document.getElementById('3d-334-predict').textContent = duan['预测断组'] || '-';
+            }
+
+            // 55分解
+            if (d['55_fenjie']) {
+                const fenjie = d['55_fenjie'];
+                document.getElementById('3d-55-a').textContent = fenjie['前组(0-4)'] || 0;
+                document.getElementById('3d-55-b').textContent = fenjie['后组(5-9)'] || 0;
+                document.getElementById('3d-55-predict').textContent = fenjie['预测偏向'] || '-';
             }
 
             // 更新时间
@@ -779,6 +885,8 @@
                     dan: {金胆: '2', 银胆: '5'},
                     sizhu: ['204', '357', '628', '915'],
                     sums: [15, 17],
+                    '334_duan': {'组1(012)': 18, '组2(345)': 22, '组3(6789)': 25, '预测断组': '组1(012)'},
+                    '55_fenjie': {'前组(0-4)': 20, '后组(5-9)': 28, '预测偏向': '后组(5-9)'},
                     更新: new Date().toLocaleString()
                 },
                 '3d': {
@@ -787,6 +895,8 @@
                     dan: {金胆: '6', 银胆: '1'},
                     sizhu: ['628', '357', '104', '915'],
                     sums: [15, 18],
+                    '334_duan': {'组1(012)': 20, '组2(345)': 18, '组3(6789)': 27, '预测断组': '组2(345)'},
+                    '55_fenjie': {'前组(0-4)': 25, '后组(5-9)': 23, '预测偏向': '前组(0-4)'},
                     更新: new Date().toLocaleString()
                 }
             };
