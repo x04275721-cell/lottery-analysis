@@ -640,10 +640,6 @@
             <div style="display:flex;align-items:center;gap:16px;margin-top:8px;font-size:0.85rem;">
                 <span id="updateTime" style="color:var(--accent);">🕐 加载中...</span>
                 <button onclick="refreshData()" style="background:var(--primary);color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">🔄 刷新数据</button>
-                <label style="display:flex;align-items:center;gap:4px;color:var(--text-muted);cursor:pointer;">
-                    <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" style="cursor:pointer;">
-                    <span id="autoRefreshLabel">自动刷新(关)</span>
-                </label>
             </div>
         </header>
 
@@ -1064,7 +1060,6 @@
         };
         let favorites = [];
         let currentType = 'pl3';
-        let autoRefreshInterval = null;
         let lastUpdateTime = null;
 
         // 刷新数据
@@ -1111,22 +1106,6 @@
                     }
                 })
                 .catch(() => console.log('服务器数据加载失败'));
-        }
-
-        // 自动刷新开关
-        function toggleAutoRefresh() {
-            const checkbox = document.getElementById('autoRefresh');
-            const label = document.getElementById('autoRefreshLabel');
-            if (checkbox.checked) {
-                autoRefreshInterval = setInterval(refreshData, 60000); // 每60秒
-                label.textContent = '自动刷新(开)';
-            } else {
-                if (autoRefreshInterval) {
-                    clearInterval(autoRefreshInterval);
-                    autoRefreshInterval = null;
-                }
-                label.textContent = '自动刷新(关)';
-            }
         }
 
         // ==================== 预测算法 ====================
@@ -1709,17 +1688,18 @@
             updateDuanVisual(result.duan);
 
             // 更新对码法
-            const duima = analyzeDuima(history);
-            const duimaStability = checkStability(history, 'duima');
+            const duimaHistory = allData[type];
+            const duima = analyzeDuima(duimaHistory);
+            const duimaStability = checkStability(duimaHistory, 'duima');
             updateDuimaVisual(duima, duimaStability);
 
             // 更新和值尾分解
-            const sumtail = analyzeSumTail(history);
-            const sumtailStability = checkStability(history, 'sumtail');
+            const sumtail = analyzeSumTail(duimaHistory);
+            const sumtailStability = checkStability(duimaHistory, 'sumtail');
             updateSumTailVisual(sumtail, sumtailStability);
 
             // 更新组合分解
-            updateCombinedVisual(history);
+            updateCombinedVisual(duimaHistory);
         }
 
         function updateMissGrid(miss) {
