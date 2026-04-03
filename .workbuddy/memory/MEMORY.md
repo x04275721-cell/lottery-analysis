@@ -38,6 +38,12 @@
 - `data/all_history.json`：历史数据
 - `index.html`：前端页面（已添加分解式展示和稳定度警告）
 
+## GitHub 仓库
+
+- **地址**: https://github.com/x04275721-cell/lottery-analysis
+- **GitHub Pages**: https://x04275721-cell.github.io/lottery-analysis/
+- **同步**: 每次代码更新后自动 push
+
 ## 334断组方法（已完成）
 
 ### 核心原理
