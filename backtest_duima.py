@@ -166,8 +166,8 @@ def backtest_combined(data, name, periods=100):
 def check_stability(data, periods=30):
     """
     检查方法的稳定度（最近30期）
+    稳定标准：>=85%（30期里最多4-5期出现"单边出3"的情况）
     返回: (正确率, 是否稳定)
-    稳定标准：>=85% 则视为稳定
     """
     test_data = data[:periods+1]
 

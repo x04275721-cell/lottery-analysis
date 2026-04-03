@@ -741,6 +741,73 @@
                         预测偏向: <strong id="fenjiePredict">-</strong>
                     </p>
                 </div>
+
+                <!-- 对码法 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🔢</span>
+                        对码法分解
+                        <span id="duima-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                    </div>
+                    <div class="fenjie-visual" id="duimaVisual">
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-1);" id="duima-group-a">-</div>
+                            <div class="ratio">对码组(6个)</div>
+                        </div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-3);" id="duima-group-b">-</div>
+                            <div class="ratio">剩余组(4个)</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">
+                        规则：两边都有不同数字 = 正确，只有一边有 = 错误
+                    </p>
+                </div>
+
+                <!-- 和值尾四六分解 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">📊</span>
+                        和值尾四六分解
+                        <span id="sumtail-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                    </div>
+                    <div class="fenjie-visual" id="sumtailVisual">
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-1);" id="sumtail-group-a">-</div>
+                            <div class="ratio">4码组</div>
+                            <div class="ratio" id="sumtail-sum">和尾: -</div>
+                        </div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-3);" id="sumtail-group-b">-</div>
+                            <div class="ratio">6码组</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">
+                        规则：两边都有不同数字 = 正确，只有一边有 = 错误
+                    </p>
+                </div>
+
+                <!-- 组合分解 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🎯</span>
+                        组合分解（推荐）
+                        <span id="combined-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                    </div>
+                    <div class="fenjie-visual">
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--gold);" id="combined-intersection">-</div>
+                            <div class="ratio">交集杀号</div>
+                        </div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--text-muted);" id="combined-remaining">-</div>
+                            <div class="ratio">剩余号码</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:16px;font-size:0.85rem;color:var(--success);" id="combined-desc">
+                        同时使用对码法与和值尾四六分解，取交集更安全
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -1230,6 +1297,106 @@
             };
         }
 
+        // 对码表
+        const DUIMA_PAIRS = {
+            '0': '5', '5': '0', '1': '6', '6': '1',
+            '2': '7', '7': '2', '3': '8', '8': '3', '4': '9', '9': '4'
+        };
+
+        // 和值尾四六分解表
+        const SUM_TAIL_DECOMPOSE = {
+            '0': {4: '0126', 6: '345789'}, '5': {4: '0126', 6: '345789'},
+            '1': {4: '1237', 6: '045689'}, '6': {4: '1237', 6: '045689'},
+            '2': {4: '2348', 6: '015679'}, '7': {4: '2348', 6: '015679'},
+            '3': {4: '3459', 6: '012678'}, '8': {4: '3459', 6: '012678'},
+            '4': {4: '0456', 6: '123789'}, '9': {4: '0456', 6: '123789'}
+        };
+
+        // 获取对码分解组
+        function getDuimaGroup(lastNum) {
+            const duimaSet = new Set();
+            for (const d of lastNum) {
+                duimaSet.add(d);
+                duimaSet.add(DUIMA_PAIRS[d]);
+            }
+            const duimaGroup = Array.from(duimaSet).sort().join('');
+            const allDigits = new Set('0123456789');
+            const remainingGroup = Array.from(allDigits - duimaSet).sort().join('');
+            return { duimaGroup, remainingGroup };
+        }
+
+        // 获取和值尾分解组
+        function getSumTailGroup(lastNum) {
+            const sum = parseInt(lastNum[0]) + parseInt(lastNum[1]) + parseInt(lastNum[2]);
+            const sumTail = String(sum % 10);
+            const decompose = SUM_TAIL_DECOMPOSE[sumTail];
+            return {
+                group4: decompose[4],
+                group6: decompose[6],
+                sumTail: sumTail
+            };
+        }
+
+        // 检查分解式是否正确（两边都有不同数字=正确）
+        function checkResult(resultNum, groupA, groupB) {
+            const uniqueDigits = new Set(resultNum);
+            let inA = 0, inB = 0;
+            for (const d of uniqueDigits) {
+                if (groupA.includes(d)) inA++;
+                if (groupB.includes(d)) inB++;
+            }
+            return inA >= 1 && inB >= 1;
+        }
+
+        // 对码法分析
+        function analyzeDuima(history) {
+            if (history.length < 2) return null;
+            const lastNum = history[0].num1 + history[0].num2 + history[0].num3;
+            const { duimaGroup, remainingGroup } = getDuimaGroup(lastNum);
+            return { lastNum, duimaGroup, remainingGroup };
+        }
+
+        // 和值尾分解分析
+        function analyzeSumTail(history) {
+            if (history.length < 2) return null;
+            const lastNum = history[0].num1 + history[0].num2 + history[0].num3;
+            const { group4, group6, sumTail } = getSumTailGroup(lastNum);
+            return { lastNum, group4, group6, sumTail };
+        }
+
+        // 检查稳定度（最近30期）
+        function checkStability(history, method) {
+            if (history.length < 32) return { rate: 0, stable: false, correct: 0, total: 0 };
+
+            const testData = history.slice(0, 31); // 30期测试
+            let correct = 0;
+
+            for (let i = 0; i < testData.length - 1; i++) {
+                const lastNum = testData[i + 1].num1 + testData[i + 1].num2 + testData[i + 1].num3;
+                const resultNum = testData[i].num1 + testData[i].num2 + testData[i].num3;
+
+                let isCorrect = false;
+                if (method === 'duima') {
+                    const { duimaGroup, remainingGroup } = getDuimaGroup(lastNum);
+                    isCorrect = checkResult(resultNum, duimaGroup, remainingGroup);
+                } else if (method === 'sumtail') {
+                    const { group4, group6 } = getSumTailGroup(lastNum);
+                    isCorrect = checkResult(resultNum, group4, group6);
+                } else if (method === 'combined') {
+                    const { duimaGroup, remainingGroup } = getDuimaGroup(lastNum);
+                    const { group4, group6 } = getSumTailGroup(lastNum);
+                    const duimaCorrect = checkResult(resultNum, duimaGroup, remainingGroup);
+                    const sumtailCorrect = checkResult(resultNum, group4, group6);
+                    isCorrect = duimaCorrect && sumtailCorrect;
+                }
+
+                if (isCorrect) correct++;
+            }
+
+            const rate = (correct / 30 * 100).toFixed(1);
+            return { rate: parseFloat(rate), stable: parseFloat(rate) >= 85, correct, total: 30 };
+        }
+
         // 生成四注推荐
         function generateBets(pos1, pos2, pos3, sums) {
             const bets = [];
@@ -1399,6 +1566,19 @@
 
             // 更新55分解
             updateFenJieVisual(result.fenjie);
+
+            // 更新对码法
+            const duima = analyzeDuima(history);
+            const duimaStability = checkStability(history, 'duima');
+            updateDuimaVisual(duima, duimaStability);
+
+            // 更新和值尾分解
+            const sumtail = analyzeSumTail(history);
+            const sumtailStability = checkStability(history, 'sumtail');
+            updateSumTailVisual(sumtail, sumtailStability);
+
+            // 更新组合分解
+            updateCombinedVisual(history);
         }
 
         function updateMissGrid(miss) {
@@ -1441,6 +1621,72 @@
             document.getElementById('fenjie-a-ratio').textContent = fenjie.aRatio + '%';
             document.getElementById('fenjie-b-ratio').textContent = fenjie.bRatio + '%';
             document.getElementById('fenjiePredict').textContent = fenjie.predict;
+        }
+
+        function updateDuimaVisual(duima, stability) {
+            document.getElementById('duima-group-a').textContent = duima ? duima.duimaGroup : '-';
+            document.getElementById('duima-group-b').textContent = duima ? duima.remainingGroup : '-';
+
+            const stabilityEl = document.getElementById('duima-stability');
+            if (stability && stability.total > 0) {
+                if (stability.stable) {
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${stability.rate}% 稳定</span>`;
+                } else {
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${stability.rate}% 谨慎使用</span>`;
+                }
+            } else {
+                stabilityEl.textContent = '';
+            }
+        }
+
+        function updateSumTailVisual(sumtail, stability) {
+            document.getElementById('sumtail-group-a').textContent = sumtail ? sumtail.group4 : '-';
+            document.getElementById('sumtail-group-b').textContent = sumtail ? sumtail.group6 : '-';
+            document.getElementById('sumtail-sum').textContent = sumtail ? `和尾: ${sumtail.sumTail}` : '和尾: -';
+
+            const stabilityEl = document.getElementById('sumtail-stability');
+            if (stability && stability.total > 0) {
+                if (stability.stable) {
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${stability.rate}% 稳定</span>`;
+                } else {
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${stability.rate}% 谨慎使用</span>`;
+                }
+            } else {
+                stabilityEl.textContent = '';
+            }
+        }
+
+        function updateCombinedVisual(history) {
+            if (history.length < 2) {
+                document.getElementById('combined-intersection').textContent = '-';
+                document.getElementById('combined-remaining').textContent = '-';
+                return;
+            }
+
+            const lastNum = history[0].num1 + history[0].num2 + history[0].num3;
+            const { duimaGroup } = getDuimaGroup(lastNum);
+            const { group4 } = getSumTailGroup(lastNum);
+
+            // 交集
+            const intersection = Array.from(new Set(duimaGroup.split('').filter(d => group4.includes(d)))).sort().join('');
+            document.getElementById('combined-intersection').textContent = intersection || '无';
+
+            // 剩余号码
+            const remaining = Array.from(new Set('0123456789'.split('').filter(d => !intersection.includes(d)))).sort().join('');
+            document.getElementById('combined-remaining').textContent = remaining;
+
+            // 稳定度
+            const stability = checkStability(history, 'combined');
+            const stabilityEl = document.getElementById('combined-stability');
+            if (stability.total > 0) {
+                if (stability.stable) {
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${stability.rate}% 稳定</span>`;
+                } else {
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${stability.rate}% 谨慎使用</span>`;
+                }
+            } else {
+                stabilityEl.textContent = '';
+            }
         }
 
         // ==================== 历史查询 ====================
