@@ -7,9 +7,10 @@ __pycache__/
 venv/
 .venv/
 
-# Data files (keep .gitkeep)
-data/*.json
+# Data files
+# data/*.json  # 允许JSON文件用于GitHub Pages
 !data/.gitkeep
+!data/all_history.json
 
 # IDE
 .vscode/
