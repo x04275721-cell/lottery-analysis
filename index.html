@@ -1665,24 +1665,67 @@
 
             const lastNum = history[0].num1 + history[0].num2 + history[0].num3;
             const { duimaGroup } = getDuimaGroup(lastNum);
-            const { group4 } = getSumTailGroup(lastNum);
+            const { group4, group6 } = getSumTailGroup(lastNum);
 
             // 交集
             const intersection = Array.from(new Set(duimaGroup.split('').filter(d => group4.includes(d)))).sort().join('');
             document.getElementById('combined-intersection').textContent = intersection || '无';
 
-            // 剩余号码
-            const remaining = Array.from(new Set('0123456789'.split('').filter(d => !intersection.includes(d)))).sort().join('');
-            document.getElementById('combined-remaining').textContent = remaining;
+            // 稳定度检查
+            const duimaStability = checkStability(history, 'duima');
+            const sumtailStability = checkStability(history, 'sumtail');
+            const combinedStability = checkStability(history, 'combined');
 
-            // 稳定度
-            const stability = checkStability(history, 'combined');
-            const stabilityEl = document.getElementById('combined-stability');
-            if (stability.total > 0) {
-                if (stability.stable) {
-                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${stability.rate}% 稳定</span>`;
+            // 判断使用哪种方法
+            let recommendedMethod = 'combined';
+            let recommendedGroup = intersection || '无';
+            let recommendDesc = '两种方法都稳定，使用交集更安全';
+
+            if (!duimaStability.stable && !sumtailStability.stable) {
+                // 两种都不稳定，选择正确率更高的
+                if (duimaStability.rate > sumtailStability.rate) {
+                    recommendedMethod = 'duima';
+                    recommendedGroup = duimaGroup;
+                    recommendDesc = `[WARN] 两种方法都不稳定，对码法正确率更高(${duimaStability.rate}%)，仅供参考`;
                 } else {
-                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${stability.rate}% 谨慎使用</span>`;
+                    recommendedMethod = 'sumtail';
+                    recommendedGroup = group4;
+                    recommendDesc = `[WARN] 两种方法都不稳定，和值尾分解正确率更高(${sumtailStability.rate}%)，仅供参考`;
+                }
+            } else if (!duimaStability.stable) {
+                recommendedMethod = 'sumtail';
+                recommendedGroup = group4;
+                recommendDesc = `[WARN] 对码法不稳定(${duimaStability.rate}%)，使用和值尾分解(${sumtailStability.rate}%)`;
+            } else if (!sumtailStability.stable) {
+                recommendedMethod = 'duima';
+                recommendedGroup = duimaGroup;
+                recommendDesc = `[WARN] 和值尾分解不稳定(${sumtailStability.rate}%)，使用对码法(${duimaStability.rate}%)`;
+            }
+
+            // 剩余号码（基于推荐方法）
+            let remaining = '';
+            if (recommendedMethod === 'combined') {
+                remaining = Array.from(new Set('0123456789'.split('').filter(d => !intersection.includes(d)))).sort().join('');
+            } else if (recommendedMethod === 'duima') {
+                remaining = Array.from(new Set('0123456789'.split('').filter(d => !duimaGroup.includes(d)))).sort().join('');
+            } else {
+                remaining = Array.from(new Set('0123456789'.split('').filter(d => !group4.includes(d)))).sort().join('');
+            }
+            document.getElementById('combined-remaining').textContent = remaining;
+            document.getElementById('combined-desc').textContent = recommendDesc;
+
+            // 稳定度显示
+            const stabilityEl = document.getElementById('combined-stability');
+            const displayRate = recommendedMethod === 'combined' ? combinedStability.rate :
+                                recommendedMethod === 'duima' ? duimaStability.rate : sumtailStability.rate;
+            const isStable = recommendedMethod === 'combined' ? combinedStability.stable :
+                            recommendedMethod === 'duima' ? duimaStability.stable : sumtailStability.stable;
+
+            if (combinedStability.total > 0) {
+                if (isStable) {
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${displayRate}% 稳定</span>`;
+                } else {
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${displayRate}%</span>`;
                 }
             } else {
                 stabilityEl.textContent = '';
