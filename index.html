@@ -698,24 +698,28 @@
                 <div class="card">
                     <div class="card-title">
                         <span class="icon">⚡</span>
-                        334断组分析
+                        334智能断组推荐
+                        <span id="duan-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
                     </div>
                     <div class="duan-visual" id="duanVisual">
-                        <div class="duan-group" id="duan-g1">
-                            <div class="nums">0 1 2</div>
-                            <div class="count">出现 <span id="duan-g1-count">0</span> 次</div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-1);" id="duan-group4">-</div>
+                            <div class="ratio">4码组</div>
                         </div>
-                        <div class="duan-group" id="duan-g2">
-                            <div class="nums">3 4 5</div>
-                            <div class="count">出现 <span id="duan-g2-count">0</span> 次</div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-2);" id="duan-group3a">-</div>
+                            <div class="ratio">3码组</div>
                         </div>
-                        <div class="duan-group" id="duan-g3">
-                            <div class="nums">6 7 8 9</div>
-                            <div class="count">出现 <span id="duan-g3-count">0</span> 次</div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-3);" id="duan-group3b">-</div>
+                            <div class="ratio">3码组</div>
                         </div>
                     </div>
-                    <p style="margin-top:16px;font-size:0.9rem;color:var(--warning);">
-                        预测断组: <strong id="duanPredict">-</strong>
+                    <p style="margin-top:12px;font-size:0.85rem;">
+                        方法: <strong id="duan-method">-</strong>
+                    </p>
+                    <p style="margin-top:4px;font-size:0.85rem;color:var(--text-muted);">
+                        规则：1-1-1分布=失败，其他=成功
                     </p>
                 </div>
 
@@ -1231,28 +1235,6 @@
             return top;
         }
 
-        // 334断组分析
-        function analyze334(history, count = 30) {
-            const groups = {
-                g1: { nums: [0, 1, 2], count: 0 },
-                g2: { nums: [3, 4, 5], count: 0 },
-                g3: { nums: [6, 7, 8, 9], count: 0 }
-            };
-
-            const data = history.slice(0, count);
-            for (let item of data) {
-                const nums = [parseInt(item.num1), parseInt(item.num2), parseInt(item.num3)];
-                if (nums.some(n => groups.g1.nums.includes(n))) groups.g1.count++;
-                if (nums.some(n => groups.g2.nums.includes(n))) groups.g2.count++;
-                if (nums.some(n => groups.g3.nums.includes(n))) groups.g3.count++;
-            }
-
-            const predict = Object.entries(groups)
-                .sort((a, b) => a[1].count - b[1].count)[0][0];
-
-            return { groups, predict };
-        }
-
         // 对码表
         const DUIMA_PAIRS = {
             '0': '5', '5': '0', '1': '6', '6': '1',
@@ -1267,6 +1249,203 @@
             '3': {4: '3459', 6: '012678'}, '8': {4: '3459', 6: '012678'},
             '4': {4: '0456', 6: '123789'}, '9': {4: '0456', 6: '123789'}
         };
+
+        // 和跨合尾查表334断组表
+        const HEKUA_334_TABLE = {
+            '0': ['019', '2378', '456'], '5': ['019', '2378', '456'],
+            '1': ['012', '3489', '567'], '6': ['012', '3489', '567'],
+            '2': ['123', '0459', '678'], '7': ['123', '0459', '678'],
+            '3': ['234', '0156', '789'], '8': ['234', '0156', '789'],
+            '4': ['345', '1267', '089'], '9': ['345', '1267', '089']
+        };
+
+        // ========== 334断组方法 ==========
+
+        // 方法一：对码断组法
+        function make334Duima(lastNum) {
+            const duimaSet = new Set();
+            for (const d of lastNum) {
+                duimaSet.add(d);
+                duimaSet.add(DUIMA_PAIRS[d]);
+            }
+            const merged = Array.from(duimaSet).sort();
+
+            let g4, g3a, g3b;
+            if (merged.length === 4) {
+                // 刚好4个，作为第一组
+                g4 = merged.join('');
+                // 剩余6个用自然升序分两组
+                const remainingSet = new Set('0123456789'.split(''));
+                merged.forEach(d => remainingSet.delete(d));
+                const remaining = Array.from(remainingSet).sort();
+                g3a = remaining.slice(0, 3).join('');
+                g3b = remaining.slice(3).join('');
+            } else {
+                // 6个，选含奖号多的4个作为g4
+                // 剩余2个与另外4个组成g3a和g3b
+                const remainingSet = new Set('0123456789'.split(''));
+                merged.forEach(d => remainingSet.delete(d));
+                const remainingFromOther = Array.from(remainingSet).sort();
+
+                // g4取前4个（含奖号多的优先）
+                g4 = merged.slice(0, 4).join('');
+                // 剩余2个 + 另外4个 = 6个，分两组
+                const mergedRemaining = merged.slice(4);
+                const combinedRemaining = [...mergedRemaining, ...remainingFromOther].sort();
+                g3a = combinedRemaining.slice(0, 3).join('');
+                g3b = combinedRemaining.slice(3).join('');
+            }
+            return { g4, g3a, g3b, method: '对码断组法' };
+        }
+
+        // 方法二：和跨合尾查表法
+        function make334Hekua(lastNum) {
+            // 计算和值
+            const sum = parseInt(lastNum[0]) + parseInt(lastNum[1]) + parseInt(lastNum[2]);
+            // 计算跨度
+            const nums = lastNum.split('').map(Number).sort((a, b) => a - b);
+            const kuadu = nums[2] - nums[0];
+            // 和跨尾
+            const tail = String((sum + kuadu) % 10);
+            const groups = HEKUA_334_TABLE[tail];
+            return { g4: groups[1], g3a: groups[0], g3b: groups[2], method: '和跨查表法' };
+        }
+
+        // 计算均衡度（奇偶+大小）
+        function calcBalanceScore(g4, g3a, g3b) {
+            const allGroups = [g4.split(''), g3a.split(''), g3b.split('')];
+            let score = 0;
+
+            for (const group of allGroups) {
+                const odd = group.filter(d => parseInt(d) % 2 === 1).length;
+                const even = group.length - odd;
+                // 奇偶均衡：2:1或1:2得1分，3:0或0:3得0分
+                if ((odd === 2 && even === 1) || (odd === 1 && even === 2)) score++;
+                else if (odd === 3 || even === 3) score += 0;
+
+                // 大小均衡：0-4为小，5-9为大
+                const small = group.filter(d => parseInt(d) <= 4).length;
+                const big = group.length - small;
+                if ((small === 2 && big === 1) || (small === 1 && big === 2)) score++;
+                else if (small === 3 || big === 3) score += 0;
+            }
+            return score;
+        }
+
+        // 方法三：奖号邻号法（追热法）
+        function make334Linhao(lastNum) {
+            const nums = lastNum.split('').map(Number);
+
+            // 生成全部+1和全部-1的邻号
+            const plus1 = nums.map(n => (n + 1) % 10).sort();
+            const minus1 = nums.map(n => (n + 9) % 10).sort();
+
+            // 去重取3个
+            const plus1Set = [...new Set(plus1)];
+            const minus1Set = [...new Set(minus1)];
+
+            const g3a_plus = plus1Set.slice(0, 3).sort().join('');
+            const g3a_minus = minus1Set.slice(0, 3).sort().join('');
+
+            // 计算均衡度选择更好的方案
+            const remainingSet = new Set('0123456789'.split('').map(Number));
+            nums.forEach(n => remainingSet.delete(n));
+
+            // 方案A：+1邻号
+            const remainingA = Array.from(remainingSet).sort();
+            const g3bA = remainingA.slice(0, 3).join('');
+            const g4A = remainingA.slice(3).join('');
+            const scoreA = calcBalanceScore(lastNum, g3a_plus, g3bA);
+
+            // 方案B：-1邻号
+            const remainingB = Array.from(remainingSet).sort();
+            const g3bB = remainingB.slice(0, 3).join('');
+            const g4B = remainingB.slice(3).join('');
+            const scoreB = calcBalanceScore(lastNum, g3a_minus, g3bB);
+
+            if (scoreA >= scoreB) {
+                return { g4: g4A, g3a: g3a_plus, g3b: g3bA, method: '邻号法(+1)' };
+            } else {
+                return { g4: g4B, g3a: g3a_minus, g3b: g3bB, method: '邻号法(-1)' };
+            }
+        }
+
+        // 检查334断组是否正确（不是1-1-1分布即为正确）
+        function check334Correct(resultNum, g4, g3a, g3b) {
+            const uniqueDigits = new Set(resultNum);
+            let in4 = 0, in3a = 0, in3b = 0;
+
+            for (const d of uniqueDigits) {
+                if (g4.includes(d)) in4++;
+                if (g3a.includes(d)) in3a++;
+                if (g3b.includes(d)) in3b++;
+            }
+
+            // 1-1-1分布 = 失败
+            if (in4 === 1 && in3a === 1 && in3b === 1) return false;
+            return true;
+        }
+
+        // 回测某方法的正确率
+        function backtest334Method(history, methodFn, periods = 30) {
+            if (history.length < periods + 1) return { rate: 0, stable: false, correct: 0, total: 0 };
+
+            let correct = 0;
+            for (let i = 0; i < periods; i++) {
+                const lastNum = history[i + 1].num1 + history[i + 1].num2 + history[i + 1].num3;
+                const resultNum = history[i].num1 + history[i].num2 + history[i].num3;
+
+                const { g4, g3a, g3b } = methodFn(lastNum);
+                if (check334Correct(resultNum, g4, g3a, g3b)) correct++;
+            }
+
+            const rate = (correct / periods * 100).toFixed(1);
+            return {
+                rate: parseFloat(rate),
+                stable: parseFloat(rate) >= 85,
+                correct,
+                total: periods
+            };
+        }
+
+        // 334断组分析（返回推荐结果）
+        function analyze334(history) {
+            if (history.length < 2) {
+                return { g4: '-', g3a: '-', g3b: '-', method: '-', rate: 0, stable: false };
+            }
+
+            const lastNum = history[0].num1 + history[0].num2 + history[0].num3;
+
+            // 生成三种断组
+            const duima = make334Duima(lastNum);
+            const hekua = make334Hekua(lastNum);
+            const linhao = make334Linhao(lastNum);
+
+            // 回测正确率
+            const duimaStats = backtest334Method(history.slice(), make334Duima);
+            const hekuaStats = backtest334Method(history.slice(), make334Hekua);
+            const linhaoStats = backtest334Method(history.slice(), make334Linhao);
+
+            // 选正确率最高的
+            const methods = [
+                { name: '对码断组法', ...duima, ...duimaStats },
+                { name: '和跨查表法', ...hekua, ...hekuaStats },
+                { name: '邻号法', ...linhao, ...linhaoStats }
+            ];
+
+            methods.sort((a, b) => b.rate - a.rate);
+            const best = methods[0];
+
+            return {
+                g4: best.g4,
+                g3a: best.g3a,
+                g3b: best.g3b,
+                method: best.method + ' (' + best.rate + '%)',
+                rate: best.rate,
+                stable: best.stable,
+                allMethods: methods
+            };
+        }
 
         // 获取对码分解组
         function getDuimaGroup(lastNum) {
@@ -1550,18 +1729,22 @@
         }
 
         function updateDuanVisual(duan) {
-            document.getElementById('duan-g1-count').textContent = duan.groups.g1.count;
-            document.getElementById('duan-g2-count').textContent = duan.groups.g2.count;
-            document.getElementById('duan-g3-count').textContent = duan.groups.g3.count;
+            document.getElementById('duan-group4').textContent = duan ? duan.g4 : '-';
+            document.getElementById('duan-group3a').textContent = duan ? duan.g3a : '-';
+            document.getElementById('duan-group3b').textContent = duan ? duan.g3b : '-';
+            document.getElementById('duan-method').textContent = duan ? duan.method : '-';
 
-            const predictMap = { g1: '组1(012)', g2: '组2(345)', g3: '组3(6789)' };
-            document.getElementById('duanPredict').textContent = predictMap[duan.predict];
-
-            // 高亮预测断组
-            ['g1', 'g2', 'g3'].forEach(g => {
-                const el = document.getElementById(`duan-${g}`);
-                el.classList.toggle('predict', g === duan.predict);
-            });
+            // 稳定度显示
+            const stabilityEl = document.getElementById('duan-stability');
+            if (duan && duan.rate > 0) {
+                if (duan.stable) {
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${duan.rate}% 稳定</span>`;
+                } else {
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${duan.rate}%</span>`;
+                }
+            } else {
+                stabilityEl.textContent = '';
+            }
         }
 
         function updateDuimaVisual(duima, stability) {
