@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>彩票预测系统 V6.0</title>
+    <title>彩票预测系统 V7.0</title>
     <style>
+        :root {
+            --bg-dark: #0f0f23;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #252542;
+            --accent-1: #4361ee;
+            --accent-2: #7209b7;
+            --accent-3: #f72585;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --success: #06d6a0;
+            --warning: #ffbe0b;
+            --danger: #ef476f;
+            --text: #e0e0e0;
+            --text-muted: #888;
+            --border: rgba(255,255,255,0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,919 +29,1830 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
             min-height: 100vh;
-            color: #fff;
-            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(67, 97, 238, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(114, 9, 183, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(247, 37, 133, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        h1 {
+        /* 头部 */
+        header {
             text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #e94560, #ff6b6b, #feca57);
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 8px;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 30px;
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
         }
 
+        /* 标签页 */
         .tabs {
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            padding: 12px 30px;
-            border: none;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, #e94560, #ff6b6b);
-            box-shadow: 0 4px 15px rgba(233,69,96,0.4);
-        }
-
-        .tab-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .content {
-            display: none;
-        }
-
-        .content.active {
-            display: block;
-        }
-
-        .card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .card h2 {
-            color: #e94560;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .latest-result {
-            background: rgba(233,69,96,0.2);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .latest-result .period {
-            color: #888;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
-
-        .latest-result .number {
-            font-size: 3em;
-            font-weight: bold;
-            color: #feca57;
-            letter-spacing: 15px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .item {
-            background: rgba(255,255,255,0.03);
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .item h3 {
-            color: #888;
-            font-size: 0.9em;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .number-list {
-            display: flex;
-            gap: 10px;
+            gap: 8px;
+            margin-bottom: 24px;
             flex-wrap: wrap;
         }
 
-        .number-box {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .tab-btn {
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 主网格 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .icon {
+            font-size: 1.3rem;
+        }
+
+        /* 彩票类型选择 */
+        .lottery-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .lottery-btn {
+            flex: 1;
+            padding: 16px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .lottery-btn:hover {
+            border-color: var(--accent-1);
+        }
+
+        .lottery-btn.active {
+            border-color: var(--accent-1);
+            background: rgba(67, 97, 238, 0.2);
+            color: var(--accent-1);
+        }
+
+        /* 预测结果 */
+        .prediction-result {
+            margin-top: 20px;
+        }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--bg-dark);
             border-radius: 10px;
+        }
+
+        .result-label {
+            width: 80px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .result-value {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .num-ball {
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2em;
-            font-weight: bold;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1rem;
         }
 
-        .number-box.gold {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            box-shadow: 0 4px 15px rgba(245,87,108,0.4);
+        .num-ball.gold {
+            background: linear-gradient(135deg, var(--gold), #ff8c00);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
 
-        .number-box.silver {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            box-shadow: 0 4px 15px rgba(79,172,254,0.4);
-        }
-
-        .number-box.sum {
-            background: linear-gradient(135deg, #43e97b, #38f9d7);
-            box-shadow: 0 4px 15px rgba(67,233,123,0.4);
-        }
-
-        .number-box.sizhu {
-            background: linear-gradient(135deg, #fa709a, #fee140);
-            box-shadow: 0 4px 15px rgba(250,112,154,0.4);
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-
-        .stat-label {
-            color: #888;
-        }
-
-        .stat-value {
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .update-time {
-            text-align: center;
-            color: #666;
-            margin-top: 20px;
-            font-size: 0.85em;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #e94560, #ff6b6b);
-            color: #fff;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(233,69,96,0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        /* 和值显示区域 */
-        .sum-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sum-section h3 {
-            color: #43e97b;
-            margin-bottom: 15px;
+        .num-ball.silver {
+            background: linear-gradient(135deg, var(--silver), #888);
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
         }
 
         .sum-box {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #43e97b, #38f9d7);
-            border-radius: 12px;
-            font-size: 1.5em;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(67,233,123,0.4);
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+            border-radius: 8px;
+            font-weight: 700;
         }
 
-        /* 历史记录 */
+        .bet-number {
+            padding: 10px 16px;
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        /* 历史表格 */
         .history-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 16px;
         }
 
         .history-table th,
         .history-table td {
             padding: 12px;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--border);
         }
 
         .history-table th {
-            color: #888;
-            font-weight: normal;
-            font-size: 0.85em;
+            background: var(--bg-dark);
+            font-weight: 600;
+            color: var(--accent-1);
+            position: sticky;
+            top: 0;
         }
 
-        .history-table td {
-            color: #fff;
+        .history-table tr:hover {
+            background: var(--bg-card-hover);
         }
 
-        .history-table .num {
-            display: inline-block;
-            padding: 5px 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            margin: 2px;
+        .history-table .highlight {
+            background: rgba(67, 97, 238, 0.2);
         }
 
-        .summary-stats {
+        .history-table .win {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* 搜索框 */
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+        }
+
+        /* 遗漏值 */
+        .miss-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .miss-item {
+            padding: 12px 8px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .miss-item .num {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .miss-item .miss {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .miss-item.hot .num {
+            color: var(--danger);
+        }
+
+        .miss-item.cold .num {
+            color: var(--accent-1);
+        }
+
+        .miss-item.warning {
+            background: rgba(239, 71, 111, 0.2);
+            border: 1px solid var(--danger);
+        }
+
+        /* 走势图 */
+        .chart-container {
+            height: 200px;
+            margin-top: 16px;
+            position: relative;
+        }
+
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(to top, var(--accent-1), var(--accent-3));
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+            transform: scaleY(1.05);
+        }
+
+        /* 334断组可视化 */
+        .duan-visual {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .duan-group {
+            flex: 1;
+            padding: 16px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .duan-group .nums {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .duan-group .count {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .duan-group.predict {
+            border: 2px solid var(--danger);
+            background: rgba(239, 71, 111, 0.1);
+        }
+
+        /* 55分解可视化 */
+        .fenjie-visual {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .fenjie-group {
+            flex: 1;
+            padding: 16px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+        }
+
+        .fenjie-group .nums {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .fenjie-group .ratio {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* 数据导入 */
+        .import-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .import-zone:hover {
+            border-color: var(--accent-1);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .import-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         .stat-card {
-            background: rgba(255,255,255,0.03);
-            border-radius: 15px;
-            padding: 20px;
+            padding: 16px;
+            background: var(--bg-dark);
+            border-radius: 12px;
             text-align: center;
         }
 
         .stat-card .value {
-            font-size: 2em;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-1);
         }
 
         .stat-card .label {
-            color: #888;
-            font-size: 0.85em;
-            margin-top: 5px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* 更新信息 */
+        .update-info {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* 比较工具 */
+        .compare-tool {
+            margin-top: 20px;
+        }
+
+        .compare-inputs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .compare-result {
+            padding: 16px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+        }
+
+        /* 快捷工具 */
+        .quick-tools {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .tool-btn {
+            padding: 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--accent-1);
+            background: var(--bg-card-hover);
+        }
+
+        .tool-btn .icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .tool-btn .label {
+            font-size: 0.9rem;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--accent-1);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        .table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎰 彩票预测系统 V6.0</h1>
-        <p class="subtitle">体彩排列三 / 福彩3D 双彩预测</p>
+        <header>
+            <h1>🎰 彩票预测系统 V7.0</h1>
+            <p>排列三 / 3D 双彩预测 · 智能分析 · 历史查询</p>
+        </header>
 
+        <!-- 标签页 -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('pl3')">🏆 体彩排列三</button>
-            <button class="tab-btn" onclick="showTab('3d')">🎯 福彩3D</button>
-            <button class="tab-btn" onclick="showTab('backtest')">📊 回测数据</button>
+            <button class="tab-btn active" data-tab="predict">📊 预测分析</button>
+            <button class="tab-btn" data-tab="history">📜 历史查询</button>
+            <button class="tab-btn" data-tab="trend">📈 走势分析</button>
+            <button class="tab-btn" data-tab="tools">🛠️ 工具箱</button>
+            <button class="tab-btn" data-tab="import">📥 数据导入</button>
         </div>
 
-        <!-- 排列三内容 -->
-        <div id="pl3" class="content active">
-            <div class="card">
-                <h2>🏆 体彩排列三</h2>
-                <div class="latest-result">
-                    <div class="period">最新一期: <span id="pl3-period">加载中...</span></div>
-                    <div class="number" id="pl3-number">---</div>
-                </div>
-
-                <div class="summary-stats">
-                    <div class="stat-card">
-                        <div class="value" id="pl3-wuxiao-rate">--%</div>
-                        <div class="label">五码命中率</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value" id="pl3-gold-rate">--%</div>
-                        <div class="label">金胆命中率</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value" id="pl3-sum-rate">--%</div>
-                        <div class="label">和值命中率</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value" id="pl3-any-rate">--%</div>
-                        <div class="label">至少中1个</div>
-                    </div>
-                </div>
-
-                <div class="grid">
-                    <div class="item">
-                        <h3>五码推荐</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">位1</span>
-                            <div class="number-list" id="pl3-wuxiao-1"></div>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">位2</span>
-                            <div class="number-list" id="pl3-wuxiao-2"></div>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">位3</span>
-                            <div class="number-list" id="pl3-wuxiao-3"></div>
-                        </div>
+        <!-- 预测分析 -->
+        <div id="predict" class="tab-content active">
+            <div class="main-grid">
+                <!-- 预测主面板 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🎯</span>
+                        智能预测
                     </div>
 
-                    <div class="item">
-                        <h3>金银胆</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">金胆</span>
-                            <div class="number-list">
-                                <div class="number-box gold" id="pl3-gold">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">银胆</span>
-                            <div class="number-list">
-                                <div class="number-box silver" id="pl3-silver">-</div>
-                            </div>
-                        </div>
+                    <div class="lottery-selector">
+                        <button class="lottery-btn active" data-type="pl3">🏆 排列三</button>
+                        <button class="lottery-btn" data-type="3d">🎯 3D</button>
                     </div>
 
-                    <div class="item">
-                        <h3>四注号</h3>
-                        <div class="number-list" id="pl3-sizhu"></div>
-                    </div>
-
-                    <div class="item">
-                        <h3>和值预测</h3>
-                        <div class="sum-section" style="border-top:none;padding-top:0;margin-top:0;">
-                            <div class="number-list" id="pl3-sums"></div>
-                        </div>
-                    </div>
-
-                    <div class="item">
-                        <h3>334断组</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">组1 (012)</span>
-                            <span class="stat-value" id="pl3-334-g1">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">组2 (345)</span>
-                            <span class="stat-value" id="pl3-334-g2">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">组3 (6789)</span>
-                            <span class="stat-value" id="pl3-334-g3">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">预测断组</span>
-                            <span class="stat-value" style="color:#e94560;" id="pl3-334-predict">-</span>
-                        </div>
-                    </div>
-
-                    <div class="item">
-                        <h3>55分解</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">前组 (0-4)</span>
-                            <span class="stat-value" id="pl3-55-a">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">后组 (5-9)</span>
-                            <span class="stat-value" id="pl3-55-b">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">预测偏向</span>
-                            <span class="stat-value" style="color:#43e97b;" id="pl3-55-predict">-</span>
+                    <div class="prediction-result" id="predictionResult">
+                        <div class="empty-state">
+                            <div class="icon">📊</div>
+                            <p>选择彩票类型开始预测</p>
                         </div>
                     </div>
                 </div>
 
-                <p class="update-time">数据更新时间: <span id="pl3-update">--</span></p>
-            </div>
-
-            <div class="card">
-                <h2>📜 历史开奖</h2>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>期号</th>
-                            <th>开奖号码</th>
-                            <th>和值</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pl3-history"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 3D内容 -->
-        <div id="3d" class="content">
-            <div class="card">
-                <h2>🎯 福彩3D</h2>
-                <div class="latest-result">
-                    <div class="period">最新一期: <span id="3d-period">加载中...</span></div>
-                    <div class="number" id="3d-number">---</div>
+                <!-- 遗漏值追踪 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🔥</span>
+                        遗漏值追踪
+                        <span style="font-size:0.8rem;color:var(--text-muted);margin-left:auto;">红色=过热 蓝色=过冷</span>
+                    </div>
+                    <div class="miss-grid" id="missGrid">
+                        <!-- 动态生成 0-9 -->
+                    </div>
+                    <p style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">
+                        数字下方为当前遗漏期数，点击可查看详细历史
+                    </p>
                 </div>
 
-                <div class="summary-stats">
-                    <div class="stat-card">
-                        <div class="value" id="3d-wuxiao-rate">--%</div>
-                        <div class="label">五码命中率</div>
+                <!-- 334断组 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">⚡</span>
+                        334断组分析
                     </div>
-                    <div class="stat-card">
-                        <div class="value" id="3d-gold-rate">--%</div>
-                        <div class="label">金胆命中率</div>
+                    <div class="duan-visual" id="duanVisual">
+                        <div class="duan-group" id="duan-g1">
+                            <div class="nums">0 1 2</div>
+                            <div class="count">出现 <span id="duan-g1-count">0</span> 次</div>
+                        </div>
+                        <div class="duan-group" id="duan-g2">
+                            <div class="nums">3 4 5</div>
+                            <div class="count">出现 <span id="duan-g2-count">0</span> 次</div>
+                        </div>
+                        <div class="duan-group" id="duan-g3">
+                            <div class="nums">6 7 8 9</div>
+                            <div class="count">出现 <span id="duan-g3-count">0</span> 次</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="value" id="3d-sum-rate">--%</div>
-                        <div class="label">和值命中率</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value" id="3d-any-rate">--%</div>
-                        <div class="label">至少中1个</div>
-                    </div>
+                    <p style="margin-top:16px;font-size:0.9rem;color:var(--warning);">
+                        预测断组: <strong id="duanPredict">-</strong>
+                    </p>
                 </div>
 
-                <div class="grid">
-                    <div class="item">
-                        <h3>五码推荐</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">位1</span>
-                            <div class="number-list" id="3d-wuxiao-1"></div>
+                <!-- 55分解 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">⚖️</span>
+                        55分解分析
+                    </div>
+                    <div class="fenjie-visual" id="fenjieVisual">
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-1);">0 1 2 3 4</div>
+                            <div class="ratio">出现 <span id="fenjie-a-count">0</span> 次</div>
+                            <div class="ratio" id="fenjie-a-ratio">0%</div>
                         </div>
-                        <div class="stat-row">
-                            <span class="stat-label">位2</span>
-                            <div class="number-list" id="3d-wuxiao-2"></div>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">位3</span>
-                            <div class="number-list" id="3d-wuxiao-3"></div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-3);">5 6 7 8 9</div>
+                            <div class="ratio">出现 <span id="fenjie-b-count">0</span> 次</div>
+                            <div class="ratio" id="fenjie-b-ratio">0%</div>
                         </div>
                     </div>
-
-                    <div class="item">
-                        <h3>金银胆</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">金胆</span>
-                            <div class="number-list">
-                                <div class="number-box gold" id="3d-gold">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">银胆</span>
-                            <div class="number-list">
-                                <div class="number-box silver" id="3d-silver">-</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="item">
-                        <h3>四注号</h3>
-                        <div class="number-list" id="3d-sizhu"></div>
-                    </div>
-
-                    <div class="item">
-                        <h3>和值预测</h3>
-                        <div class="sum-section" style="border-top:none;padding-top:0;margin-top:0;">
-                            <div class="number-list" id="3d-sums"></div>
-                        </div>
-                    </div>
-
-                    <div class="item">
-                        <h3>334断组</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">组1 (012)</span>
-                            <span class="stat-value" id="3d-334-g1">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">组2 (345)</span>
-                            <span class="stat-value" id="3d-334-g2">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">组3 (6789)</span>
-                            <span class="stat-value" id="3d-334-g3">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">预测断组</span>
-                            <span class="stat-value" style="color:#e94560;" id="3d-334-predict">-</span>
-                        </div>
-                    </div>
-
-                    <div class="item">
-                        <h3>55分解</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">前组 (0-4)</span>
-                            <span class="stat-value" id="3d-55-a">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">后组 (5-9)</span>
-                            <span class="stat-value" id="3d-55-b">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">预测偏向</span>
-                            <span class="stat-value" style="color:#43e97b;" id="3d-55-predict">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="update-time">数据更新时间: <span id="3d-update">--</span></p>
-            </div>
-
-            <div class="card">
-                <h2>📜 历史开奖</h2>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>期号</th>
-                            <th>开奖号码</th>
-                            <th>和值</th>
-                        </tr>
-                    </thead>
-                    <tbody id="3d-history"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 回测数据 -->
-        <div id="backtest" class="content">
-            <div class="card">
-                <h2>📊 回测统计</h2>
-                <p style="color:#888;margin-bottom:20px;">基于历史数据的预测命中率验证</p>
-
-                <div class="grid">
-                    <div class="item" style="grid-column: span 2;">
-                        <h3 style="color:#e94560;">体彩排列三</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">五码三位全中</span>
-                            <span class="stat-value" id="bt-pl3-wuxiao">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">金胆命中</span>
-                            <span class="stat-value" id="bt-pl3-gold">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">银胆命中</span>
-                            <span class="stat-value" id="bt-pl3-silver">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">和值命中</span>
-                            <span class="stat-value" id="bt-pl3-sum">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">至少中1个</span>
-                            <span class="stat-value" id="bt-pl3-any">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">最大连中</span>
-                            <span class="stat-value" id="bt-pl3-streak-hit">--期</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">最大连挂</span>
-                            <span class="stat-value" id="bt-pl3-streak-miss">--期</span>
-                        </div>
-                    </div>
-
-                    <div class="item" style="grid-column: span 2;">
-                        <h3 style="color:#43e97b;">福彩3D</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">五码三位全中</span>
-                            <span class="stat-value" id="bt-3d-wuxiao">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">金胆命中</span>
-                            <span class="stat-value" id="bt-3d-gold">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">银胆命中</span>
-                            <span class="stat-value" id="bt-3d-silver">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">和值命中</span>
-                            <span class="stat-value" id="bt-3d-sum">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">至少中1个</span>
-                            <span class="stat-value" id="bt-3d-any">--%</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">最大连中</span>
-                            <span class="stat-value" id="bt-3d-streak-hit">--期</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">最大连挂</span>
-                            <span class="stat-value" id="bt-3d-streak-miss">--期</span>
-                        </div>
-                    </div>
+                    <p style="margin-top:16px;font-size:0.9rem;color:var(--success);">
+                        预测偏向: <strong id="fenjiePredict">-</strong>
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div class="btn-group">
-            <button class="btn" onclick="refreshData()">🔄 刷新数据</button>
-            <button class="btn btn-secondary" onclick="runBacktest()">📊 运行回测</button>
+        <!-- 历史查询 -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">🔍</span>
+                    历史数据查询
+                </div>
+
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索期号、号码或和值...">
+                    <select class="filter-select" id="filterType">
+                        <option value="all">全部类型</option>
+                        <option value="pl3">仅排列三</option>
+                        <option value="3d">仅3D</option>
+                    </select>
+                    <select class="filter-select" id="sumFilter">
+                        <option value="">和值范围</option>
+                        <option value="0-9">和值 0-9</option>
+                        <option value="10-14">和值 10-14</option>
+                        <option value="15-19">和值 15-19</option>
+                        <option value="20-27">和值 20-27</option>
+                    </select>
+                    <button class="btn" onclick="searchHistory()">🔍 搜索</button>
+                </div>
+
+                <div class="stats-grid" id="historyStats">
+                    <div class="stat-card">
+                        <div class="value" id="totalCount">0</div>
+                        <div class="label">总期数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="avgSum">-</div>
+                        <div class="label">平均和值</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="hotNum">-</div>
+                        <div class="label">最热号码</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="coldNum">-</div>
+                        <div class="label">最冷号码</div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>期号</th>
+                                <th>类型</th>
+                                <th>开奖号码</th>
+                                <th>和值</th>
+                                <th>奇偶</th>
+                                <th>大小</th>
+                                <th>日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <div class="icon">📋</div>
+                                    <p>暂无数据，请先导入历史数据</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 走势分析 -->
+        <div id="trend" class="tab-content">
+            <div class="main-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">📊</span>
+                        和值分布走势
+                    </div>
+                    <div class="chart-container" id="sumChart">
+                        <!-- 动态生成柱状图 -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🎲</span>
+                        奇偶比例走势
+                    </div>
+                    <div class="chart-container" id="jiOuChart">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">📈</span>
+                        位置出现统计
+                    </div>
+                    <div id="positionStats">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🔗</span>
+                        相似走势查找
+                    </div>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">
+                        找出与最近走势最相似的历史区间
+                    </p>
+                    <button class="btn" onclick="findSimilarTrend()">🔍 查找相似走势</button>
+                    <div id="similarResult" style="margin-top:16px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工具箱 -->
+        <div id="tools" class="tab-content">
+            <div class="main-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🧮</span>
+                        胆码压缩工具
+                    </div>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">
+                        输入你心水的号码，系统自动推荐最优压缩组合
+                    </p>
+                    <div style="display:flex;gap:12px;margin-bottom:16px;">
+                        <input type="text" class="search-input" id="compressInput" placeholder="输入5个号码，如：12345">
+                        <button class="btn" onclick="compressNumbers()">压缩</button>
+                    </div>
+                    <div id="compressResult"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">⚖️</span>
+                        号码对比工具
+                    </div>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">
+                        输入两期号码，查看重复情况
+                    </p>
+                    <div class="compare-inputs">
+                        <input type="text" class="search-input" id="compare1" placeholder="第一期，如：123">
+                        <input type="text" class="search-input" id="compare2" placeholder="第二期，如：456">
+                        <button class="btn" onclick="compareNumbers()">对比</button>
+                    </div>
+                    <div id="compareResult"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🎯</span>
+                        和值范围筛选
+                    </div>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">
+                        根据和值范围生成所有可能的组合
+                    </p>
+                    <div class="quick-tools">
+                        <button class="tool-btn" onclick="filterBySum(0,9)">
+                            <div class="icon">0-9</div>
+                            <div class="label">小和值</div>
+                        </button>
+                        <button class="tool-btn" onclick="filterBySum(10,14)">
+                            <div class="icon">10-14</div>
+                            <div class="label">中和值</div>
+                        </button>
+                        <button class="tool-btn" onclick="filterBySum(15,19)">
+                            <div class="icon">15-19</div>
+                            <div class="label">中高和值</div>
+                        </button>
+                        <button class="tool-btn" onclick="filterBySum(20,27)">
+                            <div class="icon">20-27</div>
+                            <div class="label">大和值</div>
+                        </button>
+                        <button class="tool-btn" onclick="exportAllData()">
+                            <div class="icon">📤</div>
+                            <div class="label">导出数据</div>
+                        </button>
+                        <button class="tool-btn" onclick="clearAllData()">
+                            <div class="icon">🗑️</div>
+                            <div class="label">清空数据</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">⭐</span>
+                        收藏记录
+                    </div>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">
+                        收藏你心水的号码，追踪历史表现
+                    </p>
+                    <div style="display:flex;gap:12px;margin-bottom:16px;">
+                        <input type="text" class="search-input" id="favInput" placeholder="输入号码，如：123">
+                        <button class="btn" onclick="addFavorite()">⭐ 收藏</button>
+                    </div>
+                    <div id="favoritesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据导入 -->
+        <div id="import" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📥</span>
+                    数据导入
+                </div>
+
+                <div class="import-zone" onclick="document.getElementById('fileInput').click()">
+                    <div class="icon">📁</div>
+                    <p style="font-size:1.1rem;margin-bottom:8px;">点击选择文件或拖拽到此处</p>
+                    <p style="color:var(--text-muted);font-size:0.9rem;">
+                        支持 CSV、TXT、JSON 格式
+                    </p>
+                    <input type="file" id="fileInput" style="display:none;" accept=".csv,.txt,.json" onchange="handleFileImport(event)">
+                </div>
+
+                <div style="margin-top:32px;">
+                    <h3 style="margin-bottom:16px;">📝 手动输入</h3>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">
+                        每行一期，格式：期号,号码,类型（pl3或3d）<br>
+                        例如：25001,258,pl3
+                    </p>
+                    <textarea id="manualInput" style="
+                        width:100%;
+                        height:200px;
+                        background:var(--bg-dark);
+                        border:1px solid var(--border);
+                        border-radius:12px;
+                        padding:16px;
+                        color:var(--text);
+                        font-family:monospace;
+                        resize:vertical;
+                    " placeholder="25001,258,pl3
+25002,134,pl3
+2025001,618,3d
+..."></textarea>
+                    <button class="btn" style="margin-top:16px;" onclick="importManualData()">📥 导入数据</button>
+                </div>
+
+                <div style="margin-top:32px;">
+                    <h3 style="margin-bottom:16px;">📋 数据格式说明</h3>
+                    <div style="background:var(--bg-dark);padding:16px;border-radius:12px;font-family:monospace;">
+                        <p>CSV格式：</p>
+                        <p style="color:var(--text-muted);margin-top:8px;">period,number,type</p>
+                        <p style="color:var(--text-muted);">25001,258,pl3</p>
+                        <p style="color:var(--text-muted);">2025001,618,3d</p>
+                        <br>
+                        <p>JSON格式：</p>
+                        <p style="color:var(--text-muted);">[{"period":"25001","number":"258","type":"pl3"},...]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="update-info">
+            数据更新时间: <span id="updateTime">-</span>
         </div>
     </div>
 
     <script>
-        let currentData = null;
+        // ==================== 数据存储 ====================
+        let allData = {
+            pl3: [],  // 排列三历史
+            '3d': []  // 3D历史
+        };
+        let favorites = [];
+        let currentType = 'pl3';
 
-        function showTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        // ==================== 预测算法 ====================
 
-            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
-            document.getElementById(tab).classList.add('active');
+        // 计算和值
+        function getSum(num1, num2, num3) {
+            return parseInt(num1) + parseInt(num2) + parseInt(num3);
         }
 
-        function createNumberBox(num, className = '') {
-            return `<div class="number-box ${className}">${num}</div>`;
+        // 计算奇偶比
+        function getJiOu(nums) {
+            let ji = 0;
+            for (let n of nums) {
+                if (parseInt(n) % 2 === 1) ji++;
+            }
+            return { ji, ou: 3 - ji };
         }
 
-        function createSumBox(num) {
-            return `<div class="sum-box">${num}</div>`;
+        // 计算大小比
+        function getDaXiao(nums) {
+            let da = 0;
+            for (let n of nums) {
+                if (parseInt(n) >= 5) da++;
+            }
+            return { da, xiao: 3 - da };
         }
 
-        function updatePL3(data) {
-            if (!data || !data.pl3) return;
-
-            const d = data.pl3;
-
-            // 最新开奖
-            document.getElementById('pl3-period').textContent = d.latest?.period || '暂无';
-            document.getElementById('pl3-number').textContent = d.latest?.号码 || '---';
-
-            // 五码
-            if (d.wuxiao) {
-                document.getElementById('pl3-wuxiao-1').innerHTML =
-                    d.wuxiao.位1.map(n => createNumberBox(n)).join('');
-                document.getElementById('pl3-wuxiao-2').innerHTML =
-                    d.wuxiao.位2.map(n => createNumberBox(n)).join('');
-                document.getElementById('pl3-wuxiao-3').innerHTML =
-                    d.wuxiao.位3.map(n => createNumberBox(n)).join('');
+        // 分析遗漏值
+        function analyzeMiss(history) {
+            const miss = {};
+            for (let i = 0; i <= 9; i++) {
+                miss[i] = 0;
             }
 
-            // 金银胆
-            document.getElementById('pl3-gold').textContent = d.dan?.金胆 || '-';
-            document.getElementById('pl3-silver').textContent = d.dan?.银胆 || '-';
-
-            // 四注号
-            if (d.sizhu) {
-                document.getElementById('pl3-sizhu').innerHTML =
-                    d.sizhu.map(n => createNumberBox(n, 'sizhu')).join('');
-            }
-
-            // 和值
-            if (d.sums) {
-                document.getElementById('pl3-sums').innerHTML =
-                    d.sums.map(n => createSumBox(n)).join('');
-            }
-
-            // 334断组
-            if (d['334_duan']) {
-                const duan = d['334_duan'];
-                document.getElementById('pl3-334-g1').textContent = duan['组1(012)'] || 0;
-                document.getElementById('pl3-334-g2').textContent = duan['组2(345)'] || 0;
-                document.getElementById('pl3-334-g3').textContent = duan['组3(6789)'] || 0;
-                document.getElementById('pl3-334-predict').textContent = duan['预测断组'] || '-';
-            }
-
-            // 55分解
-            if (d['55_fenjie']) {
-                const fenjie = d['55_fenjie'];
-                document.getElementById('pl3-55-a').textContent = fenjie['前组(0-4)'] || 0;
-                document.getElementById('pl3-55-b').textContent = fenjie['后组(5-9)'] || 0;
-                document.getElementById('pl3-55-predict').textContent = fenjie['预测偏向'] || '-';
-            }
-
-            // 更新时间
-            document.getElementById('pl3-update').textContent = d.更新 || '--';
-
-            // 回测数据
-            if (d.backtest) {
-                const bt = d.backtest;
-                document.getElementById('pl3-wuxiao-rate').textContent = bt.五码全中 || '--%';
-                document.getElementById('pl3-gold-rate').textContent = bt.金胆 || '--%';
-                document.getElementById('pl3-sum-rate').textContent = bt.和值 || '--%';
-                document.getElementById('pl3-any-rate').textContent = bt.至少中1个 || '--%';
-            }
-        }
-
-        function update3D(data) {
-            if (!data || !data['3d']) return;
-
-            const d = data['3d'];
-
-            // 最新开奖
-            document.getElementById('3d-period').textContent = d.latest?.period || '暂无';
-            document.getElementById('3d-number').textContent = d.latest?.号码 || '---';
-
-            // 五码
-            if (d.wuxiao) {
-                document.getElementById('3d-wuxiao-1').innerHTML =
-                    d.wuxiao.位1.map(n => createNumberBox(n)).join('');
-                document.getElementById('3d-wuxiao-2').innerHTML =
-                    d.wuxiao.位2.map(n => createNumberBox(n)).join('');
-                document.getElementById('3d-wuxiao-3').innerHTML =
-                    d.wuxiao.位3.map(n => createNumberBox(n)).join('');
-            }
-
-            // 金银胆
-            document.getElementById('3d-gold').textContent = d.dan?.金胆 || '-';
-            document.getElementById('3d-silver').textContent = d.dan?.银胆 || '-';
-
-            // 四注号
-            if (d.sizhu) {
-                document.getElementById('3d-sizhu').innerHTML =
-                    d.sizhu.map(n => createNumberBox(n, 'sizhu')).join('');
-            }
-
-            // 和值
-            if (d.sums) {
-                document.getElementById('3d-sums').innerHTML =
-                    d.sums.map(n => createSumBox(n)).join('');
-            }
-
-            // 334断组
-            if (d['334_duan']) {
-                const duan = d['334_duan'];
-                document.getElementById('3d-334-g1').textContent = duan['组1(012)'] || 0;
-                document.getElementById('3d-334-g2').textContent = duan['组2(345)'] || 0;
-                document.getElementById('3d-334-g3').textContent = duan['组3(6789)'] || 0;
-                document.getElementById('3d-334-predict').textContent = duan['预测断组'] || '-';
-            }
-
-            // 55分解
-            if (d['55_fenjie']) {
-                const fenjie = d['55_fenjie'];
-                document.getElementById('3d-55-a').textContent = fenjie['前组(0-4)'] || 0;
-                document.getElementById('3d-55-b').textContent = fenjie['后组(5-9)'] || 0;
-                document.getElementById('3d-55-predict').textContent = fenjie['预测偏向'] || '-';
-            }
-
-            // 更新时间
-            document.getElementById('3d-update').textContent = d.更新 || '--';
-        }
-
-        function updateBacktest(data) {
-            if (!data) return;
-
-            // 排列三回测
-            if (data.pl3?.backtest) {
-                const bt = data.pl3.backtest;
-                document.getElementById('bt-pl3-wuxiao').textContent = bt.五码全中 || '--%';
-                document.getElementById('bt-pl3-gold').textContent = bt.金胆 || '--%';
-                document.getElementById('bt-pl3-silver').textContent = bt.银胆 || '--%';
-                document.getElementById('bt-pl3-sum').textContent = bt.和值 || '--%';
-                document.getElementById('bt-pl3-any').textContent = bt.至少中1个 || '--%';
-                document.getElementById('bt-pl3-streak-hit').textContent = bt.最大连中 || '--期';
-                document.getElementById('bt-pl3-streak-miss').textContent = bt.最大连挂 || '--期';
-            }
-
-            // 3D回测
-            if (data['3d']?.backtest) {
-                const bt = data['3d'].backtest;
-                document.getElementById('bt-3d-wuxiao').textContent = bt.五码全中 || '--%';
-                document.getElementById('bt-3d-gold').textContent = bt.金胆 || '--%';
-                document.getElementById('bt-3d-silver').textContent = bt.银胆 || '--%';
-                document.getElementById('bt-3d-sum').textContent = bt.和值 || '--%';
-                document.getElementById('bt-3d-any').textContent = bt.至少中1个 || '--%';
-                document.getElementById('bt-3d-streak-hit').textContent = bt.最大连中 || '--期';
-                document.getElementById('bt-3d-streak-miss').textContent = bt.最大连挂 || '--期';
-            }
-        }
-
-        function updateHistory(type, history) {
-            const tbody = document.getElementById(`${type}-history`);
-            if (!tbody || !history) return;
-
-            let html = '';
-            for (let i = 0; i < Math.min(20, history.length); i++) {
-                const item = history[i];
-                const sum = parseInt(item.num1) + parseInt(item.num2) + parseInt(item.num3);
-                html += `
-                    <tr>
-                        <td>${item.period || item.期号 || '--'}</td>
-                        <td>
-                            <span class="num">${item.num1}</span>
-                            <span class="num">${item.num2}</span>
-                            <span class="num">${item.num3}</span>
-                        </td>
-                        <td>${sum}</td>
-                    </tr>
-                `;
-            }
-            tbody.innerHTML = html;
-        }
-
-        async function refreshData() {
-            try {
-                const response = await fetch('data/daily_conditions.json');
-                const data = await response.json();
-                currentData = data;
-
-                updatePL3(data);
-                update3D(data);
-                updateBacktest(data);
-
-                // 更新历史记录
-                if (data.pl3?.history) {
-                    updateHistory('pl3', data.pl3.history);
+            for (let item of history) {
+                const nums = [item.num1, item.num2, item.num3];
+                for (let n of nums) {
+                    miss[parseInt(n)] = 0;
                 }
-                if (data['3d']?.history) {
-                    updateHistory('3d', data['3d'].history);
+                // 增加其他数字的遗漏值
+                for (let i = 0; i <= 9; i++) {
+                    if (!nums.includes(String(i))) {
+                        miss[i]++;
+                    }
                 }
-            } catch (e) {
-                console.error('加载数据失败:', e);
-                // 尝试本地加载
-                loadLocalData();
             }
+            return miss;
         }
 
-        function loadLocalData() {
-            // 如果无法从服务器获取，生成模拟数据用于展示
-            const mockData = {
-                pl3: {
-                    latest: {period: '25040', number: '258'},
-                    wuxiao: {位1: ['0','2','4','6','8'], 位2: ['1','3','5','7','9'], 位3: ['0','2','4','6','8']},
-                    dan: {金胆: '2', 银胆: '5'},
-                    sizhu: ['204', '357', '628', '915'],
-                    sums: [15, 17],
-                    '334_duan': {'组1(012)': 18, '组2(345)': 22, '组3(6789)': 25, '预测断组': '组1(012)'},
-                    '55_fenjie': {'前组(0-4)': 20, '后组(5-9)': 28, '预测偏向': '后组(5-9)'},
-                    更新: new Date().toLocaleString()
-                },
-                '3d': {
-                    latest: {period: '2025040', number: '618'},
-                    wuxiao: {位1: ['1','3','5','7','9'], 位2: ['0','2','4','6','8'], 位3: ['1','3','5','7','9']},
-                    dan: {金胆: '6', 银胆: '1'},
-                    sizhu: ['628', '357', '104', '915'],
-                    sums: [15, 18],
-                    '334_duan': {'组1(012)': 20, '组2(345)': 18, '组3(6789)': 27, '预测断组': '组2(345)'},
-                    '55_fenjie': {'前组(0-4)': 25, '后组(5-9)': 23, '预测偏向': '前组(0-4)'},
-                    更新: new Date().toLocaleString()
-                }
+        // 统计数字出现频率
+        function getNumFrequency(history, count = 30) {
+            const freq = {};
+            for (let i = 0; i <= 9; i++) freq[i] = 0;
+
+            const data = history.slice(0, count);
+            for (let item of data) {
+                freq[parseInt(item.num1)]++;
+                freq[parseInt(item.num2)]++;
+                freq[parseInt(item.num3)]++;
+            }
+            return freq;
+        }
+
+        // 位置频率分析
+        function getPositionFrequency(history, count = 50) {
+            const pos1 = {}, pos2 = {}, pos3 = {};
+            for (let i = 0; i <= 9; i++) {
+                pos1[i] = 0; pos2[i] = 0; pos3[i] = 0;
+            }
+
+            const data = history.slice(0, count);
+            for (let item of data) {
+                pos1[parseInt(item.num1)]++;
+                pos2[parseInt(item.num2)]++;
+                pos3[parseInt(item.num3)]++;
+            }
+
+            return { pos1, pos2, pos3 };
+        }
+
+        // 获取频率最高的N个数字
+        function getTopN(freq, n = 5) {
+            return Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, n)
+                .map(([num]) => parseInt(num));
+        }
+
+        // 预测和值
+        function predictSum(history, count = 50) {
+            const sums = {};
+            for (let i = 0; i <= 27; i++) sums[i] = 0;
+
+            const data = history.slice(0, count);
+            for (let item of data) {
+                const s = getSum(item.num1, item.num2, item.num3);
+                sums[s]++;
+            }
+
+            // 取频率最高的2个和值
+            const top = Object.entries(sums)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 2)
+                .map(([s]) => parseInt(s));
+
+            return top;
+        }
+
+        // 334断组分析
+        function analyze334(history, count = 30) {
+            const groups = {
+                g1: { nums: [0, 1, 2], count: 0 },
+                g2: { nums: [3, 4, 5], count: 0 },
+                g3: { nums: [6, 7, 8, 9], count: 0 }
             };
 
-            updatePL3(mockData);
-            update3D(mockData);
-        }
-
-        async function runBacktest() {
-            showTab('backtest');
-            document.querySelector('#backtest .card h2').textContent = '📊 回测运行中...';
-
-            try {
-                const response = await fetch('data/backtest_result.json');
-                const data = await response.json();
-                updateBacktest(data);
-            } catch (e) {
-                console.error('回测数据加载失败:', e);
+            const data = history.slice(0, count);
+            for (let item of data) {
+                const nums = [parseInt(item.num1), parseInt(item.num2), parseInt(item.num3)];
+                if (nums.some(n => groups.g1.nums.includes(n))) groups.g1.count++;
+                if (nums.some(n => groups.g2.nums.includes(n))) groups.g2.count++;
+                if (nums.some(n => groups.g3.nums.includes(n))) groups.g3.count++;
             }
 
-            document.querySelector('#backtest .card h2').textContent = '📊 回测统计';
+            const predict = Object.entries(groups)
+                .sort((a, b) => a[1].count - b[1].count)[0][0];
+
+            return { groups, predict };
         }
 
-        // 页面加载时自动刷新
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLocalData(); // 先显示模拟数据
-            refreshData(); // 然后尝试加载真实数据
-        });
+        // 55分解分析
+        function analyze55(history, count = 30) {
+            let groupA = 0, groupB = 0;
+
+            const data = history.slice(0, count);
+            for (let item of data) {
+                const nums = [parseInt(item.num1), parseInt(item.num2), parseInt(item.num3)];
+                if (nums.some(n => n <= 4)) groupA++;
+                if (nums.some(n => n >= 5)) groupB++;
+            }
+
+            const predict = groupA > groupB ? '前组(0-4)' : '后组(5-9)';
+            return {
+                a: groupA,
+                b: groupB,
+                aRatio: (groupA / count * 100).toFixed(1),
+                bRatio: (groupB / count * 100).toFixed(1),
+                predict
+            };
+        }
+
+        // 生成四注推荐
+        function generateBets(pos1, pos2, pos3, sums) {
+            const bets = [];
+            const used = new Set();
+
+            // 方法1: 直接组合
+            for (let i = 0; i < 5 && bets.length < 4; i++) {
+                for (let j = 0; j < 5 && bets.length < 4; j++) {
+                    for (let k = 0; k < 5 && bets.length < 4; k++) {
+                        const bet = `${pos1[i]}${pos2[j]}${pos3[k]}`;
+                        if (!used.has(bet)) {
+                            used.add(bet);
+                            bets.push(bet);
+                        }
+                    }
+                }
+            }
+
+            // 如果不够，用和值约束补充
+            while (bets.length < 4) {
+                const s = sums[bets.length % sums.length];
+                // 简单生成
+                const a = Math.floor(Math.random() * 10);
+                const b = Math.floor(Math.random() * 10);
+                const c = s - a - b;
+                if (c >= 0 && c <= 9) {
+                    const bet = `${a}${b}${c}`;
+                    if (!used.has(bet)) {
+                        used.add(bet);
+                        bets.push(bet);
+                    }
+                }
+            }
+
+            return bets.slice(0, 4);
+        }
+
+        // ==================== 主预测函数 ====================
+        function doPrediction(type) {
+            const history = allData[type];
+            if (history.length === 0) {
+                return null;
+            }
+
+            // 1. 金银胆
+            const freq = getNumFrequency(history, 30);
+            const sortedFreq = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+            const gold = parseInt(sortedFreq[0][0]);
+            const silver = parseInt(sortedFreq[1][0]);
+
+            // 2. 五码推荐
+            const top5 = getTopN(freq, 5);
+            const posFreq = getPositionFrequency(history, 50);
+            const wuxiao = {
+                pos1: getTopN(posFreq.pos1, 5),
+                pos2: getTopN(posFreq.pos2, 5),
+                pos3: getTopN(posFreq.pos3, 5)
+            };
+
+            // 3. 和值预测
+            const sums = predictSum(history, 50);
+
+            // 4. 四注推荐
+            const bets = generateBets(wuxiao.pos1, wuxiao.pos2, wuxiao.pos3, sums);
+
+            // 5. 334断组
+            const duan = analyze334(history);
+
+            // 6. 55分解
+            const fenjie = analyze55(history);
+
+            // 7. 遗漏值
+            const miss = analyzeMiss(history);
+
+            return {
+                gold,
+                silver,
+                top5,
+                wuxiao,
+                sums,
+                bets,
+                duan,
+                fenjie,
+                miss,
+                historyCount: history.length
+            };
+        }
+
+        // ==================== UI 更新 ====================
+
+        function updatePredictionUI(result, type) {
+            if (!result) {
+                document.getElementById('predictionResult').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📊</div>
+                        <p>暂无${type === 'pl3' ? '排列三' : '3D'}历史数据</p>
+                        <p style="font-size:0.9rem;margin-top:8px;">请先导入历史数据</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const container = document.getElementById('predictionResult');
+            container.innerHTML = `
+                <div class="result-row">
+                    <div class="result-label">金胆</div>
+                    <div class="result-value">
+                        <div class="num-ball gold">${result.gold}</div>
+                    </div>
+                </div>
+                <div class="result-row">
+                    <div class="result-label">银胆</div>
+                    <div class="result-value">
+                        <div class="num-ball silver">${result.silver}</div>
+                    </div>
+                </div>
+                <div class="result-row">
+                    <div class="result-label">五码</div>
+                    <div class="result-value">
+                        ${result.top5.map(n => `<div class="num-ball">${n}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="result-row">
+                    <div class="result-label">位置码</div>
+                    <div class="result-value" style="flex-direction:column;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:40px;color:var(--text-muted);">位1</span>
+                            ${result.wuxiao.pos1.map(n => `<div class="num-ball">${n}</div>`).join('')}
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:40px;color:var(--text-muted);">位2</span>
+                            ${result.wuxiao.pos2.map(n => `<div class="num-ball">${n}</div>`).join('')}
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:40px;color:var(--text-muted);">位3</span>
+                            ${result.wuxiao.pos3.map(n => `<div class="num-ball">${n}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="result-row">
+                    <div class="result-label">四注</div>
+                    <div class="result-value" style="flex-direction:column;gap:8px;">
+                        ${result.bets.map((b, i) => `
+                            <div class="bet-number">
+                                <span style="color:var(--text-muted);margin-right:8px;">注${i+1}</span>
+                                ${b.split('').join(' ')}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="result-row">
+                    <div class="result-label">和值</div>
+                    <div class="result-value">
+                        ${result.sums.map(s => `<div class="sum-box">${s}</div>`).join('')}
+                    </div>
+                </div>
+                <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:16px;">
+                    基于最近 ${result.historyCount} 期数据分析
+                </p>
+            `;
+
+            // 更新遗漏值
+            updateMissGrid(result.miss);
+
+            // 更新334断组
+            updateDuanVisual(result.duan);
+
+            // 更新55分解
+            updateFenJieVisual(result.fenjie);
+        }
+
+        function updateMissGrid(miss) {
+            const container = document.getElementById('missGrid');
+            const avgMiss = Object.values(miss).reduce((a, b) => a + b, 0) / 10;
+
+            container.innerHTML = Object.entries(miss).map(([num, m]) => {
+                let className = 'miss-item';
+                if (m === 0) className += ' hot';
+                else if (m > avgMiss * 1.5) className += ' warning';
+                else if (m < avgMiss * 0.5) className += ' cold';
+
+                return `
+                    <div class="${className}">
+                        <div class="num">${num}</div>
+                        <div class="miss">遗漏 ${m}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDuanVisual(duan) {
+            document.getElementById('duan-g1-count').textContent = duan.groups.g1.count;
+            document.getElementById('duan-g2-count').textContent = duan.groups.g2.count;
+            document.getElementById('duan-g3-count').textContent = duan.groups.g3.count;
+
+            const predictMap = { g1: '组1(012)', g2: '组2(345)', g3: '组3(6789)' };
+            document.getElementById('duanPredict').textContent = predictMap[duan.predict];
+
+            // 高亮预测断组
+            ['g1', 'g2', 'g3'].forEach(g => {
+                const el = document.getElementById(`duan-${g}`);
+                el.classList.toggle('predict', g === duan.predict);
+            });
+        }
+
+        function updateFenJieVisual(fenjie) {
+            document.getElementById('fenjie-a-count').textContent = fenjie.a;
+            document.getElementById('fenjie-b-count').textContent = fenjie.b;
+            document.getElementById('fenjie-a-ratio').textContent = fenjie.aRatio + '%';
+            document.getElementById('fenjie-b-ratio').textContent = fenjie.bRatio + '%';
+            document.getElementById('fenjiePredict').textContent = fenjie.predict;
+        }
+
+        // ==================== 历史查询 ====================
+
+        function searchHistory() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filterType = document.getElementById('filterType').value;
+            const sumFilter = document.getElementById('sumFilter').value;
+
+            let data = [];
+            if (filterType === 'all' || filterType === 'pl3') data = data.concat(allData.pl3);
+            if (filterType === 'all' || filterType === '3d') data = data.concat(allData['3d']);
+
+            // 关键词过滤
+            if (keyword) {
+                data = data.filter(item =>
+                    item.period.toLowerCase().includes(keyword) ||
+                    item.number.toLowerCase().includes(keyword) ||
+                    item.sum.toString().includes(keyword)
+                );
+            }
+
+            // 和值范围过滤
+            if (sumFilter) {
+                const [min, max] = sumFilter.split('-').map(Number);
+                data = data.filter(item => item.sum >= min && item.sum <= max);
+            }
+
+            // 更新统计
+            updateHistoryStats(data);
+
+            // 更新表格
+            renderHistoryTable(data);
+        }
+
+        function updateHistoryStats(data) {
+            document.getElementById('totalCount').textContent = data.length;
+
+            if (data.length > 0) {
+                const avgSum = data.reduce((a, b) => a + b.sum, 0) / data.length;
+                document.getElementById('avgSum').textContent = avgSum.toFixed(1);
+
+                // 最热最冷号码
+                const freq = {};
+                for (let i = 0; i <= 9; i++) freq[i] = 0;
+                data.forEach(item => {
+                    freq[parseInt(item.num1)]++;
+                    freq[parseInt(item.num2)]++;
+                    freq[parseInt(item.num3)]++;
+                });
+                const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+                document.getElementById('hotNum').textContent = sorted[0][0];
+                document.getElementById('coldNum').textContent = sorted[sorted.length - 1][0];
+            }
+        }
+
+        function renderHistoryTable(data) {
+            const tbody = document.getElementById('historyTableBody');
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <div class="icon">📋</div>
+                            <p>没有找到匹配的数据</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = data.slice(0, 100).map(item => {
+                const jiOu = getJiOu([item.num1, item.num2, item.num3]);
+                const daXiao = getDaXiao([item.num1, item.num2, item.num3]);
+                return `
+                    <tr>
+                        <td>${item.period}</td>
+                        <td>${item.type === 'pl3' ? '排列三' : '3D'}</td>
+                        <td><strong>${item.num1} ${item.num2} ${item.num3}</strong></td>
+                        <td>${item.sum}</td>
+                        <td>${jiOu.ji}:${jiOu.ou}</td>
+                        <td>${daXiao.da}:${daXiao.xiao}</td>
+                        <td>${item.date || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==================== 走势图表 ====================
+
+        function updateTrendCharts() {
+            const history = allData[currentType] || [];
+            if (history.length === 0) return;
+
+            // 和值分布
+            const sums = {};
+            for (let i = 0; i <= 27; i++) sums[i] = 0;
+            history.forEach(item => sums[item.sum]++);
+
+            const sumContainer = document.getElementById('sumChart');
+            const maxSum = Math.max(...Object.values(sums));
+            sumContainer.innerHTML = Object.entries(sums).map(([sum, count]) => {
+                const height = (count / maxSum * 100).toFixed(1);
+                return `<div class="chart-bar" style="left:${sum * 3.5}%;width:3%;height:${height}%;" title="和值${sum}: ${count}次"></div>`;
+            }).join('');
+
+            // 奇偶走势
+            const jiOuContainer = document.getElementById('jiOuChart');
+            const recent = history.slice(0, 30).reverse();
+            jiOuContainer.innerHTML = recent.map((item, i) => {
+                const jiOu = getJiOu([item.num1, item.num2, item.num3]);
+                return `<div style="position:absolute;bottom:0;left:${i * 3.3}%;width:3%;text-align:center;">
+                    <div style="height:${jiOu.ji * 30}px;background:var(--accent-1);border-radius:4px 4px 0 0;"></div>
+                    <div style="height:${jiOu.ou * 30}px;background:var(--accent-3);border-radius:0 0 4px 4px;"></div>
+                </div>`;
+            }).join('');
+
+            // 位置统计
+            const posFreq = getPositionFrequency(history, 50);
+            const posContainer = document.getElementById('positionStats');
+            ['pos1', 'pos2', 'pos3'].forEach((pos, idx) => {
+                const top = getTopN(posFreq[pos], 3);
+                const total = Object.values(posFreq[pos]).reduce((a, b) => a + b, 0);
+                posContainer.innerHTML += `
+                    <div style="margin-bottom:16px;">
+                        <strong>位${idx + 1}最热:</strong>
+                        ${top.map(n => `<span style="margin-left:12px;">
+                            <strong style="color:var(--accent-1);">${n}</strong>
+                            <span style="color:var(--text-muted);">(${posFreq[pos][n]}次, ${(posFreq[pos][n]/total*100).toFixed(1)}%)</span>
+                        </span>`).join('')}
+                    </div>
+                `;
+            });
+        }
+
+        function findSimilarTrend() {
+            // 简化版：找出最近5期与历史中最相似的5期
+            const history = allData[currentType] || [];
+            if (history.length < 20) {
+                document.getElementById('similarResult').innerHTML = '<p style="color:var(--warning);">数据不足，需要至少20期历史数据</p>';
+                return;
+            }
+
+            const recent = history.slice(0, 5);
+            const recentSums = recent.map(h => h.sum);
+
+            let bestMatch = null;
+            let bestScore = -1;
+
+            for (let i = 10; i < history.length - 5; i++) {
+                const window = history.slice(i, i + 5);
+                const windowSums = window.map(h => h.sum);
+
+                // 计算相似度（差值的绝对值之和）
+                let score = 0;
+                for (let j = 0; j < 5; j++) {
+                    score += 10 - Math.abs(recentSums[j] - windowSums[j]);
+                }
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = window;
+                }
+            }
+
+            if (bestMatch) {
+                document.getElementById('similarResult').innerHTML = `
+                    <div style="background:var(--bg-dark);padding:16px;border-radius:12px;">
+                        <p style="margin-bottom:12px;">与当前走势最相似的历史区间：</p>
+                        <p style="color:var(--accent-1);font-weight:600;">
+                            ${bestMatch.map(h => h.period).join(' → ')}
+                        </p>
+                        <p style="margin-top:8px;">
+                            开奖号码：${bestMatch.map(h => `${h.num1}${h.num2}${h.num3}`).join(' | ')}
+                        </p>
+                        <p style="margin-top:8px;color:var(--text-muted);">
+                            相似度得分：${bestScore}/50
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // ==================== 工具函数 ====================
+
+        function compressNumbers() {
+            const input = document.getElementById('compressInput').value.trim();
+            if (input.length !== 5) {
+                document.getElementById('compressResult').innerHTML = '<p style="color:var(--danger);">请输入5个数字</p>';
+                return;
+            }
+
+            const nums = input.split('').map(Number);
+            const history = allData[currentType] || [];
+
+            if (history.length === 0) {
+                document.getElementById('compressResult').innerHTML = '<p style="color:var(--warning);">暂无历史数据</p>';
+                return;
+            }
+
+            // 找出包含这些数字的所有历史组合
+            const matches = history.filter(h => {
+                const all = [h.num1, h.num2, h.num3].join('');
+                return nums.some(n => all.includes(n));
+            }).slice(0, 10);
+
+            document.getElementById('compressResult').innerHTML = `
+                <div style="margin-top:16px;">
+                    <p>找到 <strong style="color:var(--accent-1);">${matches.length}</strong> 个相关历史记录</p>
+                    ${matches.map(h => `<p style="margin-top:8px;font-family:monospace;">${h.period}: ${h.num1}${h.num2}${h.num3} (和值${h.sum})</p>`).join('')}
+                </div>
+            `;
+        }
+
+        function compareNumbers() {
+            const n1 = document.getElementById('compare1').value.trim();
+            const n2 = document.getElementById('compare2').value.trim();
+
+            if (n1.length !== 3 || n2.length !== 3) {
+                document.getElementById('compareResult').innerHTML = '<p style="color:var(--danger);">请输入3位号码</p>';
+                return;
+            }
+
+            const same = [];
+            for (let i = 0; i < 3; i++) {
+                if (n1[i] === n2[i]) same.push({ pos: i + 1, num: n1[i] });
+            }
+
+            document.getElementById('compareResult').innerHTML = `
+                <div class="compare-result">
+                    <p>号码1: <strong>${n1}</strong></p>
+                    <p>号码2: <strong>${n2}</strong></p>
+                    <p style="margin-top:12px;">
+                        相同位置: ${same.length > 0 ? same.map(s => `位${s.pos}(${s.num})`).join(', ') : '无'}
+                    </p>
+                    <p style="margin-top:8px;color:${same.length === 3 ? 'var(--success)' : 'var(--text-muted)'};">
+                        ${same.length === 3 ? '🎉 三位全中！' : same.length === 0 ? '号码完全不同' : `命中 ${same.length} 个位置`}
+                    </p>
+                </div>
+            `;
+        }
+
+        function filterBySum(min, max) {
+            let data = allData.pl3.concat(allData['3d']);
+            data = data.filter(item => item.sum >= min && item.sum <= max);
+            renderHistoryTable(data);
+            updateHistoryStats(data);
+
+            // 切换到历史标签
+            document.querySelector('[data-tab="history"]').click();
+        }
+
+        function exportAllData() {
+            const data = allData.pl3.concat(allData['3d']);
+            if (data.length === 0) {
+                alert('没有数据可导出');
+                return;
+            }
+
+            const csv = 'period,number,type,sum,date\n' +
+                data.map(d => `${d.period},${d.num1}${d.num2}${d.num3},${d.type},${d.sum},${d.date || ''}`).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lottery_data_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+        }
+
+        function clearAllData() {
+            if (confirm('确定要清空所有历史数据吗？此操作不可恢复。')) {
+                allData = { pl3: [], '3d': [] };
+                favorites = [];
+                localStorage.removeItem('lotteryData');
+                localStorage.removeItem('lotteryFavorites');
+                location.reload();
+            }
+        }
+
+        function addFavorite() {
+            const input = document.getElementById('favInput').value.trim();
+            if (input.length !== 3) {
+                alert('请输入3位号码');
+                return;
+            }
+
+            favorites.push({
+                number: input,
+                type: currentType,
+                date: new Date().toLocaleString()
+            });
+
+            localStorage.setItem('lotteryFavorites', JSON.stringify(favorites));
+            renderFavorites();
+            document.getElementById('favInput').value = '';
+        }
+
+        function renderFavorites() {
+            const container = document.getElementById('favoritesList');
+            if (favorites.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);">暂无收藏</p>';
+                return;
+            }
+
+            container.innerHTML = favorites.map((f, i) => {
+                // 检查是否中奖
+                const history = allData[f.type] || [];
+                const latest = history[0];
+                const win = latest && latest.num1 === f.number[0] && latest.num2 === f.number[1] && latest.num3 === f.number[2];
+
+                return `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-dark);border-radius:8px;margin-bottom:8px;">
+                        <div>
+                            <strong style="font-size:1.2rem;letter-spacing:2px;">${f.number}</strong>
+                            <span style="margin-left:12px;color:var(--text-muted);font-size:0.85rem;">
+                                ${f.type === 'pl3' ? '排列三' : '3D'} · ${f.date}
+                            </span>
+                        </div>
+                        ${win ? '<span style="color:var(--success);">🎉 中奖</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== 数据导入 ====================
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseAndImport(content, file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseAndImport(content, filename) {
+            let imported = [];
+
+            try {
+                if (filename.endsWith('.json')) {
+                    const json = JSON.parse(content);
+                    imported = json.map(item => ({
+                        period: item.period || item.qihao,
+                        num1: (item.number || item.code || '')[0] || '0',
+                        num2: (item.number || item.code || '')[1] || '0',
+                        num3: (item.number || item.code || '')[2] || '0',
+                        type: item.type || (item.qihao && item.qihao.length === 7 ? '3d' : 'pl3'),
+                        sum: parseInt((item.number || item.code || '')[0]) + parseInt((item.number || item.code || '')[1]) + parseInt((item.number || item.code || '')[2]),
+                        date: item.date || item.time || ''
+                    }));
+                } else {
+                    // CSV 或 TXT
+                    const lines = content.trim().split('\n');
+                    imported = lines.filter(l => l.trim()).map(line => {
+                        const parts = line.split(/[,\s\t]+/);
+                        if (parts.length >= 2) {
+                            const num = parts[1].replace(/[^0-9]/g, '').padStart(3, '0');
+                            const type = parts[2] || (parts[0].length === 7 ? '3d' : 'pl3');
+                            return {
+                                period: parts[0],
+                                num1: num[0],
+                                num2: num[1],
+                                num3: num[2],
+                                type: type,
+                                sum: parseInt(num[0]) + parseInt(num[1]) + parseInt(num[2]),
+                                date: parts[3] || ''
+                            };
+                        }
+                    }).filter(Boolean);
+                }
+
+                // 分类存储
+                imported.forEach(item => {
+                    if (item.type === 'pl3' || item.type === '排列三') {
+                        allData.pl3.push(item);
+                    } else {
+                        allData['3d'].push(item);
+                    }
+                });
+
+                // 按期号排序
+                allData.pl3.sort((a, b) => b.period.localeCompare(a.period));
+                allData['3d'].sort((a, b) => b.period.localeCompare(a.period));
+
+                // 保存到localStorage
+                localStorage.setItem('lotteryData', JSON.stringify(allData));
+
+                alert(`成功导入 ${imported.length} 条数据！\n排列三: ${allData.pl3.length} 条\n3D: ${allData['3d'].length} 条`);
+
+                // 更新UI
+                const result = doPrediction(currentType);
+                updatePredictionUI(result, currentType);
+                updateTrendCharts();
+                renderFavorites();
+
+                document.getElementById('updateTime').textContent = new Date().toLocaleString();
+
+            } catch (err) {
+                alert('文件解析失败: ' + err.message);
+            }
+        }
+
+        function importManualData() {
+            const content = document.getElementById('manualInput').value;
+            if (!content.trim()) {
+                alert('请输入数据');
+                return;
+            }
+
+            parseAndImport(content, 'manual.txt');
+        }
+
+        // ==================== 初始化 ====================
+
+        function init() {
+            // 从localStorage加载数据
+            const saved = localStorage.getItem('lotteryData');
+            if (saved) {
+                try {
+                    allData = JSON.parse(saved);
+                } catch (e) {
+                    console.log('数据加载失败');
+                }
+            }
+
+            const savedFav = localStorage.getItem('lotteryFavorites');
+            if (savedFav) {
+                try {
+                    favorites = JSON.parse(savedFav);
+                } catch (e) {
+                    favorites = [];
+                }
+            }
+
+            // 初始化遗漏值网格
+            const missGrid = document.getElementById('missGrid');
+            missGrid.innerHTML = Array.from({length: 10}, (_, i) => `
+                <div class="miss-item">
+                    <div class="num">${i}</div>
+                    <div class="miss">-</div>
+                </div>
+            `).join('');
+
+            // 标签页切换
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                });
+            });
+
+            // 彩票类型切换
+            document.querySelectorAll('.lottery-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.lottery-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentType = btn.dataset.type;
+
+                    const result = doPrediction(currentType);
+                    updatePredictionUI(result, currentType);
+                    updateTrendCharts();
+                });
+            });
+
+            // 渲染收藏
+            renderFavorites();
+
+            // 初始预测
+            const result = doPrediction('pl3');
+            updatePredictionUI(result, 'pl3');
+
+            // 更新历史表格
+            searchHistory();
+        }
+
+        // 启动
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
