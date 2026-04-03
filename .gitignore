@@ -22,5 +22,8 @@ venv/
 # Windows
 Thumbs.db
 
+# WorkBuddy
+.workbuddy/
+
 # Logs
 *.log
