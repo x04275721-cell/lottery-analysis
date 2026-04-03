@@ -7,120 +7,145 @@ with open('c:/Users/zhao/WorkBuddy/Claw/data/all_history.json', 'r', encoding='u
 data_3d = sorted([d for d in data if d['type'] == '3d'], key=lambda x: x['period'], reverse=True)
 data_pl3 = sorted([d for d in data if d['type'] == 'pl3'], key=lambda x: x['period'], reverse=True)
 
-def analyze(data, name, latest_period):
-    print(f'\n========== {name} 预测分析 ==========')
-    print(f'最新期号: {latest_period} ({data[0]["date"]})')
+def get_num_frequency(history, count=30):
+    """获取数字出现频率"""
+    freq = {i: 0 for i in range(10)}
+    for item in history[:count]:
+        num = item['number']
+        freq[int(num[0])] += 1
+        freq[int(num[1])] += 1
+        freq[int(num[2])] += 1
+    return freq
+
+def get_position_frequency(history, count=50):
+    """获取位置频率"""
+    pos1, pos2, pos3 = {i: 0 for i in range(10)}, {i: 0 for i in range(10)}, {i: 0 for i in range(10)}
+    for item in history[:count]:
+        num = item['number']
+        pos1[int(num[0])] += 1
+        pos2[int(num[1])] += 1
+        pos3[int(num[2])] += 1
+    return {'pos1': pos1, 'pos2': pos2, 'pos3': pos3}
+
+def get_top_n(freq, n=5):
+    """获取频率最高的N个数字"""
+    return [int(k) for k, v in sorted(freq.items(), key=lambda x: x[1], reverse=True)[:n]]
+
+def predict_sum(history, count=50):
+    """预测和值"""
+    sums = {i: 0 for i in range(28)}
+    for item in history[:count]:
+        num = item['number']
+        s = int(num[0]) + int(num[1]) + int(num[2])
+        sums[s] += 1
+    # 取频率最高的2个和值
+    return [int(k) for k, v in sorted(sums.items(), key=lambda x: x[1], reverse=True)[:2]]
+
+def analyze_334(history, count=30):
+    """334断组分析"""
+    groups = {
+        'g1': {'nums': [0, 1, 2], 'count': 0},
+        'g2': {'nums': [3, 4, 5], 'count': 0},
+        'g3': {'nums': [6, 7, 8, 9], 'count': 0}
+    }
+    for item in history[:count]:
+        num = item['number']
+        nums = [int(n) for n in num]
+        for n in nums:
+            if n in groups['g1']['nums']: groups['g1']['count'] += 1
+            if n in groups['g2']['nums']: groups['g2']['count'] += 1
+            if n in groups['g3']['nums']: groups['g3']['count'] += 1
+    return groups
+
+def analyze_55(history, count=30):
+    """55分解分析"""
+    group_a, group_b = 0, 0
+    for item in history[:count]:
+        num = item['number']
+        nums = [int(n) for n in num]
+        if any(n <= 4 for n in nums): group_a += 1
+        if any(n >= 5 for n in nums): group_b += 1
+    return {'a': group_a, 'b': group_b}
+
+def generate_bets(pos1, pos2, pos3, sums):
+    """生成四注推荐"""
+    bets = []
+    used = set()
+
+    # 方法: 直接组合位置TOP5
+    for i in range(5):
+        for j in range(5):
+            for k in range(5):
+                bet = f'{pos1[i]}{pos2[j]}{pos3[k]}'
+                if bet not in used:
+                    used.add(bet)
+                    bets.append(bet)
+                if len(bets) >= 4:
+                    break
+            if len(bets) >= 4:
+                break
+        if len(bets) >= 4:
+            break
+
+    return bets[:4]
+
+def analyze(data, name):
+    print(f'\n========== {name} ==========')
+    print(f'最新期号: {data[0]["period"]} ({data[0]["date"]})')
     print(f'最新号码: {data[0]["number"]}')
     print()
 
-    # 最近100期分析
-    recent = data[:100]
-    all_nums = ''.join([d['number'] for d in recent])
+    # 1. 金银胆 (30期)
+    freq30 = get_num_frequency(data, 30)
+    sorted_freq = sorted(freq30.items(), key=lambda x: x[1], reverse=True)
+    gold = sorted_freq[0][0]
+    silver = sorted_freq[1][0]
+    print(f'金胆: {gold} ({sorted_freq[0][1]}次/30期)')
+    print(f'银胆: {silver} ({sorted_freq[1][1]}次/30期)')
 
-    # 频率统计
-    freq = Counter(all_nums)
-    print('--- 近100期频率统计 ---')
-    for num in sorted(freq.keys()):
-        print(f'  {num}: {freq[num]}次', end='  ')
-    print()
+    # 2. 五码 (30期频率)
+    top5 = get_top_n(freq30, 5)
+    print(f'五码: {" ".join(map(str, top5))}')
 
-    # 金胆(频率最高)
-    sorted_freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-    gold_num = sorted_freq[0][0]
-    silver_num = sorted_freq[1][0]
-    print(f'\n金胆: {gold_num} ({sorted_freq[0][1]}次)')
-    print(f'银胆: {silver_num} ({sorted_freq[1][1]}次)')
+    # 3. 位置频率 (50期)
+    pos_freq = get_position_frequency(data, 50)
+    pos1_top5 = get_top_n(pos_freq['pos1'], 5)
+    pos2_top5 = get_top_n(pos_freq['pos2'], 5)
+    pos3_top5 = get_top_n(pos_freq['pos3'], 5)
+    print(f'百位TOP5: {" ".join(map(str, pos1_top5))}')
+    print(f'十位TOP5: {" ".join(map(str, pos2_top5))}')
+    print(f'个位TOP5: {" ".join(map(str, pos3_top5))}')
 
-    # 位置频率分析
-    print('\n--- 位置频率 (百/十/个) ---')
-    pos1 = Counter([d['number'][0] for d in recent])
-    pos2 = Counter([d['number'][1] for d in recent])
-    pos3 = Counter([d['number'][2] for d in recent])
+    # 4. 和值 (50期)
+    sum_pred = predict_sum(data, 50)
+    print(f'和值推荐: {sum_pred[0]}, {sum_pred[1]}')
 
-    for pos, name_p in [(pos1, '百'), (pos2, '十'), (pos3, '个')]:
-        top3 = sorted(pos.items(), key=lambda x: x[1], reverse=True)[:5]
-        print(f'{name_p}位: {" ".join([n+"("+str(c)+"次)" for n,c in top3])}')
+    # 5. 四注
+    bets = generate_bets(pos1_top5, pos2_top5, pos3_top5, sum_pred)
+    print(f'四注: {" ".join(bets)}')
 
-    # 和值统计
-    sums = [sum(map(int, list(d['number']))) for d in recent]
-    sum_freq = Counter(sums)
-    top_sums = sorted(sum_freq.items(), key=lambda x: x[1], reverse=True)[:5]
-    print(f'\n和值TOP5: {" ".join([str(s)+"("+str(c)+"次)" for s,c in top_sums])}')
+    # 6. 334断组 (30期)
+    duan = analyze_334(data, 30)
+    print(f'334断组: 012={duan["g1"]["count"]}次 345={duan["g2"]["count"]}次 6789={duan["g3"]["count"]}次')
+    weak = min(duan.items(), key=lambda x: x[1]['count'])[0]
+    print(f'较弱组: {weak}')
 
-    # 奇偶比例
-    ji_ou = [('奇' if int(n)%2==1 else '偶') for n in list(d['number'] for d in recent[:20])]
-    jo_cnt = Counter(ji_ou)
-    print(f'近20期奇偶: 奇{jo_cnt["奇"]} 偶{jo_cnt["偶"]}')
-
-    # 334断组分析
-    g1 = [n for n in '012']
-    g2 = [n for n in '345']
-    g3 = [n for n in '6789']
-
-    def get_group(n):
-        if n in g1: return 1
-        if n in g2: return 2
-        return 3
-
-    recent_10 = data[:10]
-    groups_count = [0, 0, 0]
-    for d in recent_10:
-        groups = set([get_group(n) for n in d['number']])
-        for g in groups:
-            groups_count[g-1] += 1
-
-    print(f'\n334断组近10期: 012组{groups_count[0]}次 345组{groups_count[1]}次 6789组{groups_count[2]}次')
-    weak_group = groups_count.index(min(groups_count)) + 1
-    print(f'较弱组: 第{weak_group}组 ({["012","345","6789"][weak_group-1]})')
-
-    # 55分解
-    group_a = sum(1 for n in all_nums if n in '01234')
-    group_b = sum(1 for n in all_nums if n in '56789')
-    print(f'\n55分解: 0-4组={group_a}次 5-9组={group_b}次')
-    if group_a > group_b:
-        print('偏向: 小数组(0-4)')
-    else:
-        print('偏向: 大数组(5-9)')
-
-    # 遗漏值
-    print('\n--- 遗漏值追踪 ---')
-    last_appear = {}
-    for i, d in enumerate(data):
-        for n in d['number']:
-            if n not in last_appear:
-                last_appear[n] = i
-    miss = {n: last_appear.get(n, 0) for n in '0123456789'}
-    hot = [n for n, v in miss.items() if v < 5]
-    cold = [n for n, v in miss.items() if v > 15]
-    print(f'过热(遗漏<5): {" ".join(hot)}')
-    print(f'过冷(遗漏>15): {" ".join(cold)}')
-
-    # 生成推荐
-    print('\n========== 推荐号码 ==========')
-    top5_freq = [n for n, c in sorted(freq.items(), key=lambda x: x[1], reverse=True)[:5]]
-    print(f'五码推荐: {" ".join(top5_freq)}')
-
-    # 生成4注
-    import random
-    random.seed(42)
-    candidates = top5_freq + [gold_num, silver_num]
-    candidates = list(set(candidates))
-
-    # 基于频率的推荐组合
-    recommendations = []
-    for _ in range(4):
-        nums = random.sample(candidates, 3)
-        recommendations.append(''.join(nums))
-
-    print(f'四注推荐: {" ".join(recommendations)}')
+    # 7. 55分解 (30期)
+    fj = analyze_55(data, 30)
+    print(f'55分解: 0-4={fj["a"]}次 5-9={fj["b"]}次')
 
     return {
-        'gold': gold_num,
-        'silver': silver_num,
-        'top5': top5_freq,
-        'sums': [s for s, c in top_sums[:2]]
+        'gold': gold,
+        'silver': silver,
+        'top5': top5,
+        'bets': bets,
+        'sums': sum_pred
     }
 
 # 执行预测
-result_3d = analyze(data_3d, '3D', '2026082')
-result_pl3 = analyze(data_pl3, '排列三', '2026082')
+print('=' * 50)
+print('2026-04-03 预测结果 (与网页算法一致)')
+print('=' * 50)
+
+result_3d = analyze(data_3d, '3D')
+result_pl3 = analyze(data_pl3, '排列三')
