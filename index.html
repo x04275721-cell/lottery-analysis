@@ -1440,7 +1440,7 @@
                 g4: best.g4,
                 g3a: best.g3a,
                 g3b: best.g3b,
-                method: best.method + ' (' + best.rate + '%)',
+                method: best.name + ' (30期' + best.rate + '%)',
                 rate: best.rate,
                 stable: best.stable,
                 allMethods: methods
@@ -1734,13 +1734,13 @@
             document.getElementById('duan-group3b').textContent = duan ? duan.g3b : '-';
             document.getElementById('duan-method').textContent = duan ? duan.method : '-';
 
-            // 稳定度显示
+            // 稳定度显示 - 明确标注30期准确率
             const stabilityEl = document.getElementById('duan-stability');
             if (duan && duan.rate > 0) {
                 if (duan.stable) {
-                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${duan.rate}% 稳定</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] 30期 ${duan.rate}%</span>`;
                 } else {
-                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${duan.rate}%</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] 30期 ${duan.rate}%</span>`;
                 }
             } else {
                 stabilityEl.textContent = '';
@@ -1754,9 +1754,9 @@
             const stabilityEl = document.getElementById('duima-stability');
             if (stability && stability.total > 0) {
                 if (stability.stable) {
-                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${stability.rate}% 稳定</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] 30期 ${stability.rate}%</span>`;
                 } else {
-                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${stability.rate}% 谨慎使用</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] 30期 ${stability.rate}%</span>`;
                 }
             } else {
                 stabilityEl.textContent = '';
@@ -1771,9 +1771,9 @@
             const stabilityEl = document.getElementById('sumtail-stability');
             if (stability && stability.total > 0) {
                 if (stability.stable) {
-                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${stability.rate}% 稳定</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] 30期 ${stability.rate}%</span>`;
                 } else {
-                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${stability.rate}% 谨慎使用</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] 30期 ${stability.rate}%</span>`;
                 }
             } else {
                 stabilityEl.textContent = '';
@@ -1838,7 +1838,7 @@
             document.getElementById('combined-remaining').textContent = remaining;
             document.getElementById('combined-desc').textContent = recommendDesc;
 
-            // 稳定度显示
+            // 稳定度显示 - 明确标注30期准确率
             const stabilityEl = document.getElementById('combined-stability');
             const displayRate = recommendedMethod === 'combined' ? combinedStability.rate :
                                 recommendedMethod === 'duima' ? duimaStability.rate : sumtailStability.rate;
@@ -1847,9 +1847,9 @@
 
             if (combinedStability.total > 0) {
                 if (isStable) {
-                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] ${displayRate}% 稳定</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--success);">[OK] 30期 ${displayRate}%</span>`;
                 } else {
-                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] ${displayRate}%</span>`;
+                    stabilityEl.innerHTML = `<span style="color:var(--warning);">[WARN] 30期 ${displayRate}%</span>`;
                 }
             } else {
                 stabilityEl.textContent = '';
