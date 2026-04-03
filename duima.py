@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 彩票分解式预测
-包含两种方法：对码法、和值尾四六分解
+包含两种方法：对码法、和值尾四六分解，以及组合使用方法
 
 ================================================================================
 方法一：对码法（差5对码）
@@ -52,6 +52,26 @@
         结果：2348 - 015679
 
 ================================================================================
+方法三：组合使用（两种方法结合）
+================================================================================
+
+【组合方法】
+    不要单吊一套分解。可以同时用"对码法"和"和值尾查表法"，
+    取它们的交集（即两边都出现的号码）作为最终条件，安全性更高。
+
+【交集计算】
+    交集 = 对码组 ∩ 4码组（两个方法中都出现的号码）
+
+    示例：上期奖号 048
+        对码组 = 034589
+        和值尾2的4码组 = 2348
+        交集 = 034589 ∩ 2348 = 3, 4, 8
+
+【使用建议】
+    组合使用时，只有当两种方法都正确时，才算组合正确。
+    单一方法错误会导致组合失败。
+
+================================================================================
 分解式正确判断规则（两种方法通用）
 ================================================================================
 
@@ -67,6 +87,17 @@
 - 0+2（组三，两个不同数字都在另一组）：错误
 
 简记：两边都有不同数字 = 正确，只有一边有 = 错误
+
+================================================================================
+稳定度判断规则
+================================================================================
+
+【判断方法】
+    回测最近30期，计算"两种方法都正确"的比例
+
+【判断标准】
+    - 正确率 >= 85%：视为稳定，显示"稳定，可放心使用"
+    - 正确率 < 85%：显示"近期不太稳定，谨慎使用"
 
 ================================================================================
 """
@@ -278,11 +309,163 @@ def analyze_sum_tail_method(history_list):
     }
 
 
+def get_combined_groups(last_num):
+    """
+    获取组合分解组：同时使用对码法与和值尾四六分解
+
+    参数:
+        last_num: 上期开奖号码（字符串，如 "048"）
+
+    返回:
+        {
+            'duima_group': 对码组,
+            'remaining_group': 剩余组,
+            'group4': 4码组,
+            'group6': 6码组,
+            'intersection': 交集（对码组 ∩ 4码组）,
+            'sum_tail': 和值尾
+        }
+    """
+    duima_group, remaining_group = get_duima_group(last_num)
+    group4, group6, sum_tail = get_sum_tail_decompose(last_num)
+
+    # 交集：两个方法都对码组/4码组中都出现的号码
+    intersection = ''.join(sorted(set(duima_group) & set(group4)))
+
+    return {
+        'duima_group': duima_group,
+        'remaining_group': remaining_group,
+        'group4': group4,
+        'group6': group6,
+        'intersection': intersection,
+        'sum_tail': sum_tail
+    }
+
+
+def check_combined_result(result_num, last_num):
+    """
+    检查组合分解式预判是否正确
+    只有当两种方法都正确时，才算组合正确
+
+    返回:
+        (是否正确布尔值, 对码法结果, 和值尾结果, 组合结果说明)
+    """
+    is_correct_duima, dist_duima, _ = check_duima_result(result_num, last_num)
+    is_correct_sum_tail, dist_sum_tail, _ = check_sum_tail_result(result_num, last_num)
+
+    is_combined_correct = is_correct_duima and is_correct_sum_tail
+
+    if is_combined_correct:
+        msg = "两种都正确"
+    elif not is_correct_duima and not is_correct_sum_tail:
+        msg = "两种都错误"
+    else:
+        msg = "只有一种正确"
+
+    return is_combined_correct, (is_correct_duima, dist_duima), (is_correct_sum_tail, dist_sum_tail), msg
+
+
+def analyze_combined_method(history_list):
+    """
+    组合分解式分析（用于预测）
+
+    参数:
+        history_list: 历史数据列表（最新一期在前）
+
+    返回:
+        包含分析结果的字典
+    """
+    if not history_list or len(history_list[0]['number']) != 3:
+        return {
+            'last_number': '---',
+            'intersection': '---',
+            'duima_group': '',
+            'group4': '',
+            'result': '---',
+            'rule': '两边都有不同数字 = 正确'
+        }
+
+    last_num = history_list[0]['number']
+    combined = get_combined_groups(last_num)
+
+    return {
+        'last_number': last_num,
+        'intersection': combined['intersection'],
+        'duima_group': combined['duima_group'],
+        'group4': combined['group4'],
+        'result': f"交集: {combined['intersection']}",
+        'rule': '两边都有不同数字 = 正确'
+    }
+
+
+def check_stability_single(history_list, method, periods=30):
+    """
+    检查单种方法的稳定度
+
+    参数:
+        history_list: 历史数据列表
+        method: 'duima' 或 'sum_tail'
+        periods: 回测期数，默认30期
+
+    返回:
+        (正确率, 是否稳定, 正确次数, 总次数)
+    """
+    check_func = check_duima_result if method == 'duima' else check_sum_tail_result
+
+    test_data = history_list[:periods+1]
+    total = 0
+    correct_count = 0
+
+    for i in range(len(test_data) - 1):
+        last_num = test_data[i+1]['number']
+        result_num = test_data[i]['number']
+
+        is_correct, _, _ = check_func(result_num, last_num)
+        if is_correct:
+            correct_count += 1
+        total += 1
+
+    correct_rate = correct_count / total * 100 if total > 0 else 0
+    is_stable = correct_rate >= 85
+
+    return correct_rate, is_stable, correct_count, total
+
+
+def check_stability_combined(history_list, periods=30):
+    """
+    检查组合方法的稳定度（两种方法都正确才算稳定）
+
+    参数:
+        history_list: 历史数据列表
+        periods: 回测期数，默认30期
+
+    返回:
+        (正确率, 是否稳定, 正确次数, 总次数)
+    """
+    test_data = history_list[:periods+1]
+    total = 0
+    correct_count = 0
+
+    for i in range(len(test_data) - 1):
+        last_num = test_data[i+1]['number']
+        result_num = test_data[i]['number']
+
+        is_correct, _, _, _ = check_combined_result(result_num, last_num)
+        if is_correct:
+            correct_count += 1
+        total += 1
+
+    correct_rate = correct_count / total * 100 if total > 0 else 0
+    is_stable = correct_rate >= 85
+
+    return correct_rate, is_stable, correct_count, total
+
+
 def main():
     """主函数：显示对码法与和值尾四六分解分析结果"""
     import json
 
-    with open('data/all_history.json', 'r', encoding='utf-8') as f:
+    with open('c:/Users/zhao/WorkBuddy/Claw/data/all_history.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     data_pl3 = sorted([d for d in data if d['type'] == 'pl3'], key=lambda x: x['period'], reverse=True)
@@ -296,6 +479,12 @@ def main():
     for name, history in [('排列三', data_pl3), ('3D', data_3d)]:
         duima_result = analyze_duima_method(history)
         sum_tail_result = analyze_sum_tail_method(history)
+        combined_result = analyze_combined_method(history)
+
+        # 稳定度检查
+        duima_rate, duima_stable, duima_correct, duima_total = check_stability_single(history, 'duima', 30)
+        sum_tail_rate, sum_tail_stable, sum_tail_correct, sum_tail_total = check_stability_single(history, 'sum_tail', 30)
+        combined_rate, combined_stable, combined_correct, combined_total = check_stability_combined(history, 30)
 
         print(f"{'='*50}")
         print(f"【{name}】上期奖号: {duima_result['last_number']}")
@@ -311,11 +500,33 @@ def main():
         print(f"  4码组: {sum_tail_result['group4']}")
         print(f"  6码组: {sum_tail_result['group6']}")
         print(f"  分解结果: {sum_tail_result['result']}")
+
+        print(f"\n[组合使用]")
+        print(f"  对码组: {combined_result['duima_group']}")
+        print(f"  4码组: {combined_result['group4']}")
+        print(f"  交集(杀号): {combined_result['intersection']}")
+
+        # 稳定度警告
+        print(f"\n[稳定度检查 - 最近30期]")
+        print(f"  对码法: {duima_rate:.1f}% ({duima_correct}/{duima_total})")
+        if duima_stable:
+            print(f"    -> 稳定，可放心使用")
+        else:
+            print(f"    -> [WARN] 近期不太稳定，谨慎使用")
+
+        print(f"  和值尾四六分解: {sum_tail_rate:.1f}% ({sum_tail_correct}/{sum_tail_total})")
+        if sum_tail_stable:
+            print(f"    -> 稳定，可放心使用")
+        else:
+            print(f"    -> [WARN] 近期不太稳定，谨慎使用")
+
+        print(f"  组合(两种都正确): {combined_rate:.1f}% ({combined_correct}/{combined_total})")
+        if combined_stable:
+            print(f"    -> 稳定，可放心使用")
+        else:
+            print(f"    -> [WARN] 近期不太稳定，谨慎使用")
+
         print()
-
-
-if __name__ == '__main__':
-    main()
 
 
 if __name__ == '__main__':

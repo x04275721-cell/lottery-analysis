@@ -89,6 +89,125 @@ def check_sum_tail(result_num, last_num):
     return check_result(result_num, group_a, group_b)
 
 
+def get_combined_groups(last_num):
+    """
+    获取组合分解组：同时使用对码法与和值尾四六分解
+
+    返回: (对码组, 剩余组, 4码组, 6码组, 交集)
+    交集 = 对码组 ∩ 4码组（两边都有的号码）
+    """
+    duima_group, remaining_group = get_duima_group(last_num)
+    group4, group6, sum_tail = get_sum_tail_group(last_num)
+
+    # 交集：两边都有的号码
+    intersection = ''.join(sorted(set(duima_group) & set(group4)))
+
+    return duima_group, remaining_group, group4, group6, intersection
+
+
+def get_combined_intersection(last_num):
+    """
+    获取组合使用的杀号
+    取两套分解的【4码组】和【对码组】的交集作为杀号条件
+    """
+    duima_group, _ = get_duima_group(last_num)
+    group4, _, _ = get_sum_tail_group(last_num)
+
+    # 交集：两边都有的号码（可作为杀号参考）
+    return ''.join(sorted(set(duima_group) & set(group4)))
+
+
+def backtest_combined(data, name, periods=100):
+    """
+    回测组合分解式（同时使用两种方法）
+    规则：只有当两种方法都正确时，才算组合正确
+    """
+    print(f"\n{'='*60}")
+    print(f"  {name} 组合分解式回测 (最近{periods}期)")
+    print(f"  规则：两种方法都正确 = 正确，任一错误 = 错误")
+    print(f"{'='*60}")
+
+    test_data = data[:periods+1]
+
+    total = 0
+    both_correct = 0
+    both_wrong = 0
+    one_correct = 0  # 只有一种方法正确
+
+    for i in range(len(test_data) - 1):
+        last_num = test_data[i+1]['number']
+        result_num = test_data[i]['number']
+
+        is_correct_duima, _ = check_duima(result_num, last_num)
+        is_correct_sum_tail, _ = check_sum_tail(result_num, last_num)
+
+        if is_correct_duima and is_correct_sum_tail:
+            both_correct += 1
+        elif not is_correct_duima and not is_correct_sum_tail:
+            both_wrong += 1
+        else:
+            one_correct += 1
+        total += 1
+
+    both_rate = both_correct / total * 100 if total > 0 else 0
+
+    print(f"总预测次数: {total}")
+    print(f"两种都正确: {both_correct}次 ({both_rate:.1f}%)")
+    print(f"两种都错误: {both_wrong}次 ({both_wrong/total*100:.1f}%)")
+    print(f"只有一种正确: {one_correct}次 ({one_correct/total*100:.1f}%)")
+
+    return {
+        'total': total,
+        'both_correct': both_correct,
+        'both_rate': both_rate
+    }
+
+
+def check_stability(data, periods=30):
+    """
+    检查方法的稳定度（最近30期）
+    返回: (正确率, 是否稳定)
+    稳定标准：>=85% 则视为稳定
+    """
+    test_data = data[:periods+1]
+
+    total = 0
+    correct_count = 0
+
+    for i in range(len(test_data) - 1):
+        last_num = test_data[i+1]['number']
+        result_num = test_data[i]['number']
+
+        is_correct_duima, _ = check_duima(result_num, last_num)
+        is_correct_sum_tail, _ = check_sum_tail(result_num, last_num)
+
+        # 两种方法都正确才算本期稳定
+        if is_correct_duima and is_correct_sum_tail:
+            correct_count += 1
+        total += 1
+
+    correct_rate = correct_count / total * 100 if total > 0 else 0
+    is_stable = correct_rate >= 85
+
+    return correct_rate, is_stable, correct_count, total
+
+
+def get_stability_warning(data_3d, data_pl3, periods=30):
+    """
+    获取稳定度警告信息
+    """
+    duima_rate, duima_stable, duima_correct, duima_total = check_stability(data_3d, periods)
+    # ... similar for pl3
+
+    warnings = []
+
+    # 3D警告
+    if not duima_stable:
+        warnings.append(f"【3D】近期正确率 {duima_rate:.1f}%（{duima_correct}/{duima_total}），低于85%稳定线，谨慎使用")
+
+    return warnings
+
+
 def backtest(data, name, periods=100, method='duima'):
     """
     回测分解式
@@ -216,11 +335,40 @@ if __name__ == '__main__':
     print(f"3D: {len(data_3d)}条, 最新期号 {data_3d[0]['period']}")
     print(f"排列三: {len(data_pl3)}条, 最新期号 {data_pl3[0]['period']}")
 
-    # 回测100期
+    # =========================================
+    # 1. 单独回测100期
+    # =========================================
     backtest_both(data_3d, '3D', 100)
     backtest_both(data_pl3, '排列三', 100)
 
-    # 详细回测20期
+    # =========================================
+    # 2. 组合回测100期（两种方法都正确才算正确）
+    # =========================================
+    backtest_combined(data_3d, '3D', 100)
+    backtest_combined(data_pl3, '排列三', 100)
+
+    # =========================================
+    # 3. 稳定度检查（最近30期）
+    # =========================================
+    print(f"\n{'='*60}")
+    print(f"  稳定度检查 (最近30期)")
+    print(f"  标准：两种方法都正确的比例 >=85% 视为稳定")
+    print(f"{'='*60}")
+
+    for name, history in [('3D', data_3d), ('排列三', data_pl3)]:
+        rate, is_stable, correct, total = check_stability(history, 30)
+
+        print(f"\n【{name}】")
+        print(f"  正确率: {rate:.1f}% ({correct}/{total})")
+
+        if is_stable:
+            print(f"  状态: [OK] 稳定，可放心使用")
+        else:
+            print(f"  状态: [WARN] 近期不太稳定，谨慎使用")
+
+    # =========================================
+    # 4. 详细回测20期
+    # =========================================
     backtest_detail(data_3d, '3D', 20, 'duima')
     backtest_detail(data_pl3, '排列三', 20, 'duima')
     backtest_detail(data_3d, '3D', 20, 'sum_tail')
