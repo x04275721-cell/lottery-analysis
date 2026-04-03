@@ -1337,15 +1337,28 @@
             const nums = lastNum.split('').map(Number);
 
             // 生成全部+1和全部-1的邻号
-            const plus1 = nums.map(n => (n + 1) % 10).sort();
-            const minus1 = nums.map(n => (n + 9) % 10).sort();
+            const plus1 = nums.map(n => (n + 1) % 10);
+            const minus1 = nums.map(n => (n + 9) % 10);
 
-            // 去重取3个
-            const plus1Set = [...new Set(plus1)];
-            const minus1Set = [...new Set(minus1)];
+            // 去重并取前3个（不足3个则用其他数字补充）
+            const plus1Unique = [...new Set(plus1)].sort();
+            const minus1Unique = [...new Set(minus1)].sort();
 
-            const g3a_plus = plus1Set.slice(0, 3).sort().join('');
-            const g3a_minus = minus1Set.slice(0, 3).sort().join('');
+            // 如果邻号去重后不足3个，从剩余数字补充
+            const remainingAll = '0123456789'.split('').map(Number);
+            const numsSet = new Set(nums);
+            const supplementPool = remainingAll.filter(n => !numsSet.has(n) && !plus1Unique.includes(n));
+
+            // 确保 g3a 有3个数字
+            while (plus1Unique.length < 3 && supplementPool.length > 0) {
+                plus1Unique.push(supplementPool.shift());
+            }
+            while (minus1Unique.length < 3 && supplementPool.length > 0) {
+                minus1Unique.push(supplementPool.shift());
+            }
+
+            const g3a_plus = plus1Unique.slice(0, 3).sort().join('');
+            const g3a_minus = minus1Unique.slice(0, 3).sort().join('');
 
             // 计算均衡度选择更好的方案
             const remainingSet = new Set('0123456789'.split('').map(Number));
