@@ -407,6 +407,89 @@ def analyze_combined_method(history_list):
     }
 
 
+def get_recommended_decomposition(history_list, periods=30):
+    """
+    获取推荐的分解方法和杀号
+
+    规则：
+    1. 如果两种方法都稳定 -> 使用组合交集，安全度最高
+    2. 如果只有一种稳定 -> 使用稳定的那种方法
+    3. 如果两种都不稳定 -> 使用正确率更高的那种方法
+
+    参数:
+        history_list: 历史数据列表
+        periods: 稳定度检查期数，默认30期
+
+    返回:
+        {
+            'method': 'combined' / 'duima' / 'sum_tail',
+            'kill_numbers': 杀号（应被排除的号码）,
+            'remaining': 剩余号码,
+            'description': 推荐说明,
+            'duima_rate': 对码法正确率,
+            'sum_tail_rate': 和值尾分解正确率,
+            'duima_stable': 对码法是否稳定,
+            'sum_tail_stable': 和值尾分解是否稳定
+        }
+    """
+    if not history_list or len(history_list) < 2:
+        return {
+            'method': 'combined',
+            'kill_numbers': '',
+            'remaining': '',
+            'description': '数据不足',
+            'duima_rate': 0, 'sum_tail_rate': 0,
+            'duima_stable': False, 'sum_tail_stable': False
+        }
+
+    last_num = history_list[0]['number']
+    combined = get_combined_groups(last_num)
+
+    # 稳定度检查
+    duima_rate, duima_stable, _, _ = check_stability_single(history_list, 'duima', periods)
+    sum_tail_rate, sum_tail_stable, _, _ = check_stability_single(history_list, 'sum_tail', periods)
+
+    # 判断使用哪种方法
+    method = 'combined'
+    kill_numbers = combined['intersection']
+    remaining = ''.join(sorted(set('0123456789') - set(kill_numbers)))
+    desc = '两种方法都稳定，使用交集更安全'
+
+    if not duima_stable and not sum_tail_stable:
+        # 两种都不稳定，选择正确率更高的
+        if duima_rate > sum_tail_rate:
+            method = 'duima'
+            kill_numbers = combined['duima_group']
+            remaining = combined['remaining_group']
+            desc = f'[WARN] 两种方法都不稳定，对码法正确率更高({duima_rate:.1f}%)，仅供参考'
+        else:
+            method = 'sum_tail'
+            kill_numbers = combined['group4']
+            remaining = combined['group6']
+            desc = f'[WARN] 两种方法都不稳定，和值尾分解正确率更高({sum_tail_rate:.1f}%)，仅供参考'
+    elif not duima_stable:
+        method = 'sum_tail'
+        kill_numbers = combined['group4']
+        remaining = combined['group6']
+        desc = f'[WARN] 对码法不稳定({duima_rate:.1f}%)，使用和值尾分解({sum_tail_rate:.1f}%)'
+    elif not sum_tail_stable:
+        method = 'duima'
+        kill_numbers = combined['duima_group']
+        remaining = combined['remaining_group']
+        desc = f'[WARN] 和值尾分解不稳定({sum_tail_rate:.1f}%)，使用对码法({duima_rate:.1f}%)'
+
+    return {
+        'method': method,
+        'kill_numbers': kill_numbers,
+        'remaining': remaining,
+        'description': desc,
+        'duima_rate': duima_rate,
+        'sum_tail_rate': sum_tail_rate,
+        'duima_stable': duima_stable,
+        'sum_tail_stable': sum_tail_stable
+    }
+
+
 def check_stability_single(history_list, method, periods=30):
     """
     检查单种方法的稳定度
@@ -514,6 +597,14 @@ def main():
         print(f"  对码组: {combined_result['duima_group']}")
         print(f"  4码组: {combined_result['group4']}")
         print(f"  交集(杀号): {combined_result['intersection']}")
+
+        # 推荐结果
+        recommended = get_recommended_decomposition(history, 30)
+        print(f"\n[系统推荐]")
+        print(f"  使用方法: {recommended['method']} ({'组合' if recommended['method']=='combined' else '对码法' if recommended['method']=='duima' else '和值尾分解'})")
+        print(f"  杀号: {recommended['kill_numbers']}")
+        print(f"  剩余号码: {recommended['remaining']}")
+        print(f"  说明: {recommended['description']}")
 
         # 稳定度警告
         print(f"\n[稳定度检查 - 最近30期]")
