@@ -1,0 +1,625 @@
+/* 彩票预测系统 V7.0 样式 */
+:root {
+    --bg-dark: #0f0f23;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #252542;
+    --accent-1: #4361ee;
+    --accent-2: #7209b7;
+    --accent-3: #f72585;
+    --gold: #ffd700;
+    --silver: #c0c0c0;
+    --success: #06d6a0;
+    --warning: #ffbe0b;
+    --danger: #ef476f;
+    --text: #e0e0e0;
+    --text-muted: #888;
+    --border: rgba(255,255,255,0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 背景动画 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(67, 97, 238, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(114, 9, 183, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(247, 37, 133, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 头部 */
+header {
+    text-align: center;
+    padding: 30px 0;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* 标签页 */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(67, 97, 238, 0.4);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 主网格 */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 卡片 */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-title .icon {
+    font-size: 1.3rem;
+}
+
+/* 彩票类型选择 */
+.lottery-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.lottery-btn {
+    flex: 1;
+    padding: 16px;
+    background: var(--bg-dark);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.lottery-btn:hover {
+    border-color: var(--accent-1);
+}
+
+.lottery-btn.active {
+    border-color: var(--accent-1);
+    background: rgba(67, 97, 238, 0.2);
+    color: var(--accent-1);
+}
+
+/* 预测结果 */
+.prediction-result {
+    margin-top: 20px;
+}
+
+.result-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border-radius: 10px;
+}
+
+.result-label {
+    width: 80px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.result-value {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.num-ball {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.num-ball.gold {
+    background: linear-gradient(135deg, var(--gold), #ff8c00);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.num-ball.silver {
+    background: linear-gradient(135deg, var(--silver), #888);
+    box-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
+}
+
+.sum-box {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.bet-number {
+    padding: 10px 16px;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+}
+
+/* 历史表格 */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.history-table th,
+.history-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-table th {
+    background: var(--bg-dark);
+    font-weight: 600;
+    color: var(--accent-1);
+    position: sticky;
+    top: 0;
+}
+
+.history-table tr:hover {
+    background: var(--bg-card-hover);
+}
+
+.history-table .highlight {
+    background: rgba(67, 97, 238, 0.2);
+}
+
+.history-table .win {
+    color: var(--success);
+    font-weight: bold;
+}
+
+/* 搜索框 */
+.search-box {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-1);
+}
+
+.filter-select {
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.btn {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.btn-outline:hover {
+    border-color: var(--accent-1);
+    color: var(--accent-1);
+}
+
+/* 遗漏值 */
+.miss-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.miss-item {
+    padding: 12px 8px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.miss-item .num {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.miss-item .miss {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.miss-item.hot .num {
+    color: var(--danger);
+}
+
+.miss-item.cold .num {
+    color: var(--accent-1);
+}
+
+.miss-item.warning {
+    background: rgba(239, 71, 111, 0.2);
+    border: 1px solid var(--danger);
+}
+
+/* 走势图 */
+.chart-container {
+    height: 200px;
+    margin-top: 16px;
+    position: relative;
+}
+
+.chart-bar {
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(to top, var(--accent-1), var(--accent-3));
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+}
+
+.chart-bar:hover {
+    opacity: 0.8;
+    transform: scaleY(1.05);
+}
+
+/* 334断组可视化 */
+.duan-visual {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.duan-group {
+    flex: 1;
+    padding: 16px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.duan-group .nums {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.duan-group .count {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.duan-group.predict {
+    border: 2px solid var(--danger);
+    background: rgba(239, 71, 111, 0.1);
+}
+
+/* 55分解可视化 */
+.fenjie-visual {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.fenjie-group {
+    flex: 1;
+    padding: 16px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+}
+
+.fenjie-group .nums {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.fenjie-group .ratio {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* 数据导入 */
+.import-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.import-zone:hover {
+    border-color: var(--accent-1);
+    background: rgba(67, 97, 238, 0.05);
+}
+
+.import-zone .icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+/* 统计卡片 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.stat-card {
+    padding: 16px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-1);
+}
+
+.stat-card .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* 更新信息 */
+.update-info {
+    text-align: center;
+    padding: 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* 比较工具 */
+.compare-tool {
+    margin-top: 20px;
+}
+
+.compare-inputs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.compare-result {
+    padding: 16px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+}
+
+/* 快捷工具 */
+.quick-tools {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.tool-btn {
+    padding: 16px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.tool-btn:hover {
+    border-color: var(--accent-1);
+    background: var(--bg-card-hover);
+}
+
+.tool-btn .icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.tool-btn .label {
+    font-size: 0.9rem;
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    border-top-color: var(--accent-1);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.empty-state .icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+.table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+}
