@@ -719,29 +719,6 @@
                     </p>
                 </div>
 
-                <!-- 55分解 -->
-                <div class="card">
-                    <div class="card-title">
-                        <span class="icon">⚖️</span>
-                        55分解分析
-                    </div>
-                    <div class="fenjie-visual" id="fenjieVisual">
-                        <div class="fenjie-group">
-                            <div class="nums" style="color:var(--accent-1);">0 1 2 3 4</div>
-                            <div class="ratio">出现 <span id="fenjie-a-count">0</span> 次</div>
-                            <div class="ratio" id="fenjie-a-ratio">0%</div>
-                        </div>
-                        <div class="fenjie-group">
-                            <div class="nums" style="color:var(--accent-3);">5 6 7 8 9</div>
-                            <div class="ratio">出现 <span id="fenjie-b-count">0</span> 次</div>
-                            <div class="ratio" id="fenjie-b-ratio">0%</div>
-                        </div>
-                    </div>
-                    <p style="margin-top:16px;font-size:0.9rem;color:var(--success);">
-                        预测偏向: <strong id="fenjiePredict">-</strong>
-                    </p>
-                </div>
-
                 <!-- 对码法 -->
                 <div class="card">
                     <div class="card-title">
@@ -1276,27 +1253,6 @@
             return { groups, predict };
         }
 
-        // 55分解分析
-        function analyze55(history, count = 30) {
-            let groupA = 0, groupB = 0;
-
-            const data = history.slice(0, count);
-            for (let item of data) {
-                const nums = [parseInt(item.num1), parseInt(item.num2), parseInt(item.num3)];
-                if (nums.some(n => n <= 4)) groupA++;
-                if (nums.some(n => n >= 5)) groupB++;
-            }
-
-            const predict = groupA > groupB ? '前组(0-4)' : '后组(5-9)';
-            return {
-                a: groupA,
-                b: groupB,
-                aRatio: (groupA / count * 100).toFixed(1),
-                bRatio: (groupB / count * 100).toFixed(1),
-                predict
-            };
-        }
-
         // 对码表
         const DUIMA_PAIRS = {
             '0': '5', '5': '0', '1': '6', '6': '1',
@@ -1465,10 +1421,7 @@
             // 5. 334断组
             const duan = analyze334(history);
 
-            // 6. 55分解
-            const fenjie = analyze55(history);
-
-            // 7. 遗漏值
+            // 6. 遗漏值
             const miss = analyzeMiss(history);
 
             return {
@@ -1479,7 +1432,6 @@
                 sums,
                 bets,
                 duan,
-                fenjie,
                 miss,
                 historyCount: history.length
             };
@@ -1564,9 +1516,6 @@
             // 更新334断组
             updateDuanVisual(result.duan);
 
-            // 更新55分解
-            updateFenJieVisual(result.fenjie);
-
             // 更新对码法
             const duima = analyzeDuima(history);
             const duimaStability = checkStability(history, 'duima');
@@ -1613,14 +1562,6 @@
                 const el = document.getElementById(`duan-${g}`);
                 el.classList.toggle('predict', g === duan.predict);
             });
-        }
-
-        function updateFenJieVisual(fenjie) {
-            document.getElementById('fenjie-a-count').textContent = fenjie.a;
-            document.getElementById('fenjie-b-count').textContent = fenjie.b;
-            document.getElementById('fenjie-a-ratio').textContent = fenjie.aRatio + '%';
-            document.getElementById('fenjie-b-ratio').textContent = fenjie.bRatio + '%';
-            document.getElementById('fenjiePredict').textContent = fenjie.predict;
         }
 
         function updateDuimaVisual(duima, stability) {
