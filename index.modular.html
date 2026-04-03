@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彩票预测系统 V7.0</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 彩票预测系统 V7.0</h1>
+            <p>基于历史数据分析的智能预测</p>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:8px;font-size:0.85rem;">
+                <span id="updateTime" style="color:var(--accent-1);">🕐 加载中...</span>
+                <button onclick="refreshData()" style="background:var(--accent-1);color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">🔄 刷新数据</button>
+            </div>
+        </header>
+
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="predict">📊 预测分析</button>
+            <button class="tab-btn" data-tab="history">📜 历史查询</button>
+            <button class="tab-btn" data-tab="trend">📈 走势分析</button>
+            <button class="tab-btn" data-tab="tools">🛠️ 工具箱</button>
+            <button class="tab-btn" data-tab="import">📥 数据导入</button>
+        </div>
+
+        <!-- 预测分析 -->
+        <div id="predict" class="tab-content active">
+            <!-- 彩票类型选择 -->
+            <div class="lottery-selector">
+                <button class="lottery-btn active" data-type="pl3" onclick="switchType('pl3')">🏆 排列三</button>
+                <button class="lottery-btn" data-type="3d" onclick="switchType('3d')">🎲 福彩3D</button>
+            </div>
+
+            <div class="main-grid">
+                <!-- 左侧：预测结果 -->
+                <div id="predictionResult">
+                    <!-- 动态填充 -->
+                </div>
+
+                <!-- 右侧：遗漏值 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">📉</span> 数字遗漏
+                    </div>
+                    <div class="miss-grid" id="missGrid">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 334断组 -->
+            <div class="card" style="margin-top:24px;">
+                <div class="card-title">
+                    <span class="icon">🔢</span>
+                    334智能断组推荐
+                    <span id="duan-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                </div>
+                <div class="duan-visual" id="duanVisual">
+                    <div class="duan-group">
+                        <div class="nums" id="duan-group4">-</div>
+                        <div class="count">4码组</div>
+                    </div>
+                    <div class="duan-group">
+                        <div class="nums" id="duan-group3a">-</div>
+                        <div class="count">3码组A</div>
+                    </div>
+                    <div class="duan-group">
+                        <div class="nums" id="duan-group3b">-</div>
+                        <div class="count">3码组B</div>
+                    </div>
+                </div>
+                <p id="duan-method" style="text-align:center;margin-top:12px;color:var(--text-muted);">-</p>
+            </div>
+
+            <!-- 分解式 -->
+            <div class="main-grid" style="margin-top:24px;">
+                <!-- 对码法 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">🔢</span>
+                        对码分解式推荐
+                        <span id="duima-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                    </div>
+                    <div class="fenjie-visual" id="duimaVisual">
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-1);" id="duima-group-a">-</div>
+                            <div class="ratio">对码组(6个)</div>
+                        </div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-3);" id="duima-group-b">-</div>
+                            <div class="ratio">剩余组(4个)</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">
+                        规则：两边都有不同数字 = 正确
+                    </p>
+                </div>
+
+                <!-- 和值尾四六分解 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">📊</span>
+                        和值尾分解式推荐
+                        <span id="sumtail-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                    </div>
+                    <div class="fenjie-visual" id="sumtailVisual">
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-1);" id="sumtail-group-a">-</div>
+                            <div class="ratio">4码组</div>
+                            <div class="ratio" id="sumtail-sum">和尾: -</div>
+                        </div>
+                        <div class="fenjie-group">
+                            <div class="nums" style="color:var(--accent-3);" id="sumtail-group-b">-</div>
+                            <div class="ratio">6码组</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">
+                        规则：两边都有不同数字 = 正确
+                    </p>
+                </div>
+            </div>
+
+            <!-- 组合分解 -->
+            <div class="card" style="margin-top:24px;">
+                <div class="card-title">
+                    <span class="icon">🎯</span>
+                    智能分解式推荐
+                    <span id="combined-stability" style="font-size:0.8rem;margin-left:auto;font-weight:normal;"></span>
+                </div>
+                <div class="fenjie-visual">
+                    <div class="fenjie-group">
+                        <div class="nums" style="color:var(--accent-1);" id="combined-intersection">-</div>
+                        <div class="ratio">交集</div>
+                    </div>
+                    <div class="fenjie-group">
+                        <div class="nums" style="color:var(--accent-3);" id="combined-remaining">-</div>
+                        <div class="ratio">剩余</div>
+                    </div>
+                </div>
+                <p id="combined-desc" style="margin-top:12px;text-align:center;color:var(--text-muted);font-size:0.85rem;">-</p>
+            </div>
+        </div>
+
+        <!-- 历史查询 -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📜</span> 历史开奖
+                </div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索期号..." oninput="searchHistory()">
+                    <select class="filter-select" id="historyTypeFilter" onchange="searchHistory()">
+                        <option value="all">全部类型</option>
+                        <option value="pl3">排列三</option>
+                        <option value="3d">3D</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>期号</th>
+                                <th>类型</th>
+                                <th>开奖号码</th>
+                                <th>和值</th>
+                                <th>日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 走势分析 -->
+        <div id="trend" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📈</span> 号码走势
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="value" id="stat-total">0</div>
+                        <div class="label">总期数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="stat-odd">0</div>
+                        <div class="label">奇数比例</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="stat-big">0</div>
+                        <div class="label">大数比例</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="stat-repeat">0</div>
+                        <div class="label">重复概率</div>
+                    </div>
+                </div>
+                <div class="chart-container" id="trendChart">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 工具箱 -->
+        <div id="tools" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">🛠️</span> 快捷工具
+                </div>
+                <div class="quick-tools">
+                    <button class="tool-btn" onclick="showCompareTool()">
+                        <div class="icon">⚖️</div>
+                        <div class="label">比较工具</div>
+                    </button>
+                    <button class="tool-btn" onclick="showMissAnalysis()">
+                        <div class="icon">📊</div>
+                        <div class="label">遗漏分析</div>
+                    </button>
+                    <button class="tool-btn" onclick="showSumDistribution()">
+                        <div class="icon">📈</div>
+                        <div class="label">和值分布</div>
+                    </button>
+                </div>
+                <div class="compare-tool" id="compareTool" style="display:none;">
+                    <div class="compare-inputs">
+                        <input type="text" class="search-input" id="compareInput1" placeholder="第一组号码（如：123）" maxlength="3">
+                        <input type="text" class="search-input" id="compareInput2" placeholder="第二组号码（如：456）" maxlength="3">
+                        <button class="btn" onclick="compareNumbers()">比较</button>
+                    </div>
+                    <div class="compare-result" id="compareResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据导入 -->
+        <div id="import" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📥</span> 数据导入
+                </div>
+                <div class="import-zone" onclick="document.getElementById('fileInput').click()">
+                    <div class="icon">📁</div>
+                    <p>点击或拖拽文件到此处导入数据</p>
+                    <p style="font-size:0.85rem;margin-top:8px;color:var(--text-muted);">支持 JSON、TXT、CSV 格式</p>
+                </div>
+                <input type="file" id="fileInput" style="display:none;" accept=".json,.txt,.csv" onchange="handleFileImport(event)">
+                <div style="margin-top:20px;">
+                    <h4 style="margin-bottom:12px;">手动输入</h4>
+                    <textarea id="manualInput" class="search-input" rows="5" placeholder="每行一个号码，格式：期号,号码,类型,日期&#10;例如：25001,123,pl3,2025-01-01"></textarea>
+                    <button class="btn" style="margin-top:12px;" onclick="importManualData()">导入数据</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="update-info">
+            <p>数据来源：本地缓存 + 服务器历史数据</p>
+        </div>
+    </div>
+
+    <!-- 加载JS模块 -->
+    <script src="js/data.js"></script>
+    <script src="js/predict.js"></script>
+    <script src="js/fenjie.js"></script>
+    <script src="js/duan334.js"></script>
+    <script src="js/backtest.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
