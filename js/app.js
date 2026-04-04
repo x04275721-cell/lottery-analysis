@@ -25,18 +25,18 @@ function init() {
         </div>
     `).join('');
 
-    // 从服务器加载完整历史数据
+    // 立即用本地数据初始化UI（和原始版本一致）
+    const result = doPrediction(currentType);
+    if (result) {
+        updatePredictionUI(result, currentType);
+    }
+
+    // 异步从服务器加载最新数据
     loadServerData().then(hasNewData => {
         if (hasNewData) {
             const result = doPrediction(currentType);
             updatePredictionUI(result, currentType);
             updateTrendCharts();
-        } else {
-            // 如果服务器没有数据，使用本地数据初始化
-            const result = doPrediction(currentType);
-            if (result) {
-                updatePredictionUI(result, currentType);
-            }
         }
     });
 
