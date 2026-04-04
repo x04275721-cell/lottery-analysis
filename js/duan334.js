@@ -25,6 +25,7 @@ function make334Duima(lastNum) {
     const merged = Array.from(duimaSet).sort();
 
     let g4, g3a, g3b;
+
     if (merged.length === 4) {
         // 刚好4个，作为第一组
         g4 = merged.join('');
@@ -34,7 +35,7 @@ function make334Duima(lastNum) {
         const remaining = Array.from(remainingSet).sort();
         g3a = remaining.slice(0, 3).join('');
         g3b = remaining.slice(3).join('');
-    } else {
+    } else if (merged.length === 6) {
         // 6个，选含奖号多的4个作为g4
         // 剩余2个与另外4个组成g3a和g3b
         const remainingSet = new Set('0123456789'.split(''));
@@ -48,6 +49,24 @@ function make334Duima(lastNum) {
         const combinedRemaining = [...mergedRemaining, ...remainingFromOther].sort();
         g3a = combinedRemaining.slice(0, 3).join('');
         g3b = combinedRemaining.slice(3).join('');
+    } else {
+        // 处理特殊情况：奖号全相同（豹子如000）或只有2个不同数字（组三如001）
+        // 用奖号去重后补对码，再补其他数字凑够4个
+        const uniqueDigits = [...new Set(lastNum.split(''))].sort();
+        const supplemented = [...new Set([...uniqueDigits, ...uniqueDigits.map(d => DUIMA_PAIRS[d])])].sort();
+        // 补其他数字凑够4个
+        for (let i = 0; i <= 9 && supplemented.length < 4; i++) {
+            if (!supplemented.includes(String(i))) {
+                supplemented.push(String(i));
+            }
+        }
+        g4 = supplemented.slice(0, 4).join('');
+
+        // 重新计算剩余
+        const g4Set = new Set(g4.split(''));
+        const stillRemaining = '0123456789'.split('').filter(d => !g4Set.has(d)).sort();
+        g3a = stillRemaining.slice(0, 3).join('');
+        g3b = stillRemaining.slice(3).join('');
     }
     return { g4, g3a, g3b, method: '对码断组法' };
 }
