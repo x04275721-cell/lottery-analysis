@@ -32,6 +32,10 @@ function loadServerData() {
         .then(r => r.json())
         .then(data => {
             if (data.length > 0) {
+                // 先清空现有数据，用服务器数据完全替换
+                LotteryData.pl3 = [];
+                LotteryData['3d'] = [];
+
                 data.forEach(item => {
                     const num = item.number || '';
                     const record = {
@@ -44,13 +48,9 @@ function loadServerData() {
                         date: item.date || ''
                     };
                     if (item.type === 'pl3' || item.type === '排列三') {
-                        if (!LotteryData.pl3.some(p => p.period === record.period)) {
-                            LotteryData.pl3.push(record);
-                        }
+                        LotteryData.pl3.push(record);
                     } else {
-                        if (!LotteryData['3d'].some(p => p.period === record.period)) {
-                            LotteryData['3d'].push(record);
-                        }
+                        LotteryData['3d'].push(record);
                     }
                 });
                 // 按期号排序
