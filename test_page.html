@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Data Loading</title>
+</head>
+<body>
+    <h1>Testing Data Loading</h1>
+    <div id="status">Loading...</div>
+    <div id="log"></div>
+    <script>
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+
+        function addLog(msg) {
+            log.innerHTML += '<p>' + msg + '</p>';
+        }
+
+        let LotteryData = { pl3: [], '3d': [] };
+
+        addLog('Starting fetch...');
+        const start = Date.now();
+
+        fetch('data/all_history.json')
+            .then(r => {
+                addLog('Fetch completed: ' + (Date.now() - start) + 'ms, status: ' + r.status);
+                return r.json();
+            })
+            .then(data => {
+                addLog('JSON parsed: ' + (Date.now() - start) + 'ms, length: ' + data.length);
+                data.forEach(item => {
+                    const num = item.number || '';
+                    const record = {
+                        period: item.period,
+                        num1: num[0] || '0',
+                        num2: num[1] || '0',
+                        num3: num[2] || '0',
+                        type: item.type,
+                        sum: parseInt(num[0] || 0) + parseInt(num[1] || 0) + parseInt(num[2] || 0),
+                        date: item.date || ''
+                    };
+                    if (item.type === 'pl3' || item.type === '排列三') {
+                        LotteryData.pl3.push(record);
+                    } else {
+                        LotteryData['3d'].push(record);
+                    }
+                });
+                addLog('3d count: ' + LotteryData['3d'].length);
+                addLog('pl3 count: ' + LotteryData.pl3.length);
+                status.textContent = 'Done! 3d: ' + LotteryData['3d'].length + ', pl3: ' + LotteryData.pl3.length;
+            })
+            .catch(err => {
+                addLog('Error: ' + err.message);
+                status.textContent = 'Error: ' + err.message;
+            });
+    </script>
+</body>
+</html>
